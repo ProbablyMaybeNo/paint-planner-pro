@@ -15,8 +15,9 @@ export default function PaintCard({ paint, onClick, selected }: PaintCardProps) 
   const icon = PAINT_TYPE_ICONS[type] ?? PAINT_TYPE_ICONS[""];
   const hasHex = paint.hex && paint.hex.startsWith("#");
   const isLight = hasHex ? isLightColor(paint.hex) : false;
-  const ink = isLight ? "rgba(0,0,0,0.80)" : "rgba(255,255,255,0.85)";
-  const inkDim = isLight ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.55)";
+  const labelBg = isLight ? "rgba(255,255,255,0.60)" : "rgba(0,0,0,0.60)";
+  const ink = isLight ? "rgba(0,0,0,0.92)" : "rgba(255,255,255,0.95)";
+  const inkDim = isLight ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.80)";
 
   return (
     <div
@@ -39,31 +40,28 @@ export default function PaintCard({ paint, onClick, selected }: PaintCardProps) 
         </div>
       )}
 
-      {/* Top row: name left, type right */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-start p-1 gap-0.5">
-        <span
-          className="text-sm font-medium leading-tight line-clamp-2 flex-1 min-w-0"
-          style={{ color: ink }}
-        >
+      {/* Top strip: name + type — frosted bg for legibility */}
+      <div
+        className="absolute top-0 left-0 right-0 flex justify-between items-center gap-0.5 px-1 py-0.5"
+        style={{ background: labelBg }}
+      >
+        <span className="text-[11px] font-semibold leading-tight truncate flex-1 min-w-0" style={{ color: ink }}>
           {paint.name}
         </span>
-        <span
-          className="text-[13px] leading-none shrink-0 ml-0.5"
-          style={{ color: ink }}
-          title={icon.label}
-        >
+        <span className="text-[11px] leading-none shrink-0" style={{ color: ink }} title={icon.label}>
           {icon.symbol}
         </span>
       </div>
 
-      {/* Bottom row: hex left, company right — visible on hover */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-1 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        {hasHex && (
-          <span className="text-[7px] font-mono leading-none" style={{ color: inkDim }}>
-            {paint.hex}
-          </span>
-        )}
-        <span className="text-[7px] leading-none truncate text-right flex-1" style={{ color: inkDim }}>
+      {/* Bottom strip: hex + company — always visible, frosted bg */}
+      <div
+        className="absolute bottom-0 left-0 right-0 flex justify-between items-center gap-1 px-1 py-0.5"
+        style={{ background: labelBg }}
+      >
+        <span className="text-[10px] font-mono leading-none shrink-0" style={{ color: inkDim }}>
+          {hasHex ? paint.hex : "—"}
+        </span>
+        <span className="text-[10px] leading-none truncate text-right flex-1" style={{ color: inkDim }}>
           {paint.company}
         </span>
       </div>
