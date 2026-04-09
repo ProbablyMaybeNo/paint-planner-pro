@@ -1,89 +1,106 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
-  loadArmies, saveArmies, createArmy, createUnit, createModel, createScheme, createLayer,
-  STATUS_LABELS, STATUS_COLORS, STATUS_FLOW, PRIORITY_ICONS, PRIORITY_COLORS,
-  LAYER_ROLES, getModelProgress,
+  loadProjects, saveProjects,
+  STATUS_FLOW, PROJECT_TYPES, PROJECT_TYPE_LABELS,
 } from "@/lib/plannerStore";
-import { useCloudSync } from "@/lib/useCloudSync";
-import type { Army, Unit, Model, PaintScheme, SchemeLayer, ModelStatus, Priority, SilhouetteType, BodyZone, LayerRole } from "@/types/planner";
-import TerminalBox from "@/components/ui/TerminalBox";
-import BodySilhouette from "@/components/planner/BodySilhouette";
-import PaintPicker from "@/components/planner/PaintPicker";
+import type { Project, ProjectType, ProjectStatus, Priority } from "@/types/planner";
+import ProjectCard from "@/components/planner/ProjectCard";
+import ProjectsTable from "@/components/planner/ProjectsTable";
+import NewProjectModal from "@/components/planner/NewProjectModal";
 
-const SILHOUETTE_TYPES: SilhouetteType[] = ["infantry", "vehicle", "monster", "terrain"];
+type SortCol = "name" | "type" | "status" | "priority" | "parent";
+
+function sortProjects(
+  projects: Project[],
+  sortBy: SortCol,
+  sortDir: "asc" | "desc",
+  parentMap: Record<string, string>
+): Project[] {
+  const dir = sortDir === "asc" ? 1 : -1;
+  return [...projects].sort((a, b) => {
+    switch (sortBy) {
+      case "name":
+        return dir * a.name.localeCompare(b.name);
+      case "type":
+        return dir * a.type.localeCompare(b.type);
+      case "status":
+        return dir * (STATUS_FLOW.indexOf(a.status) - STATUS_FLOW.indexOf(b.status));
+      case "priority": {
+        const rank = { high: 2, med: 1, low: 0 };
+        return dir * (rank[a.priority] - rank[b.priority]);
+      }
+      case "parent": {
+        const pa = (a.parentId ? parentMap[a.parentId] : "") ?? "";
+        const pb = (b.parentId ? parentMap[b.parentId] : "") ?? "";
+        return dir * pa.localeCompare(pb);
+      }
+      default:
+        return 0;
+    }
+  });
+}
 
 export default function PlannerPage() {
-  const [armies, setArmies] = useState<Army[]>([]);
-  const [selectedArmy, setSelectedArmy] = useState<string | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [tab, setTab] = useState<"paints" | "diagram" | "notes">("paints");
-  const [activeZone, setActiveZone] = useState<BodyZone | null>(null);
-  const [newArmyName, setNewArmyName] = useState("");
-  const [newUnitName, setNewUnitName] = useState("");
-  const [newModelName, setNewModelName] = useState("");
-  const [newSchemeName, setNewSchemeName] = useState("");
-  const [brainstormInput, setBrainstormInput] = useState("");
-  const [wheelPalette, setWheelPalette] = useState<Array<{ hex: string }> | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editProject, setEditProject] = useState<Project | null>(null);
+  const [sortBy, setSortBy] = useState<SortCol>("priority");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [filterType, setFilterType] = useState<ProjectType | "">("");
   const [isReady, setIsReady] = useState(false);
-  const [showTree, setShowTree] = useState(false);
-  const [pickerForLayer, setPickerForLayer] = useState<string | null>(null);
-
-  const { data: session, status: authStatus } = useSession();
-  const isAuthenticated = authStatus === "authenticated";
-
-  const { syncStatus, lastSynced, cloudLoaded, setCloudLoaded, loadFromCloud } =
-    useCloudSync(armies, isAuthenticated, isReady);
 
   useEffect(() => {
-    const local = loadArmies();
-    setArmies(local);
+    setProjects(loadProjects());
     setIsReady(true);
+  }, []);
 
-    // Check for palette sent from colour wheel
-    const raw = localStorage.getItem("ppp_wheel_palette");
-    if (raw) {
-      try { setWheelPalette(JSON.parse(raw)); } catch { /* ignore */ }
+  const persist = useCallback((updated: Project[]) => {
+    setProjects(updated);
+    saveProjects(updated);
+  }, []);
+
+  const handleConfirm = useCallback((project: Project) => {
+    if (editProject) {
+      persist(projects.map((p) => p.id === project.id ? project : p));
+    } else {
+      persist([...projects, project]);
     }
+    setShowModal(false);
+    setEditProject(null);
+  }, [editProject, projects, persist]);
+
+  const handleEdit = useCallback((project: Project) => {
+    setEditProject(project);
+    setShowModal(true);
   }, []);
 
-  // On auth, load from cloud and merge with local
-  useEffect(() => {
-    if (!isAuthenticated || !isReady || cloudLoaded) return;
-    loadFromCloud().then((cloudArmies) => {
-      setCloudLoaded(true);
-      if (!cloudArmies) return;
-      if (cloudArmies.length > 0) {
-        // Cloud wins — overwrite local
-        setArmies(cloudArmies);
-        saveArmies(cloudArmies);
-      } else {
-        // No cloud data — push local to cloud
-        const local = loadArmies();
-        if (local.length > 0) {
-          fetch("/api/planner/sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ armies: local }),
-          }).catch(() => {});
-        }
-        setCloudLoaded(true);
-      }
-    });
-  }, [isAuthenticated, isReady, cloudLoaded, loadFromCloud, setCloudLoaded]);
+  const handleDelete = useCallback((id: string) => {
+    persist(projects.filter((p) => p.id !== id));
+  }, [projects, persist]);
 
-  const persist = useCallback((updated: Army[]) => {
-    setArmies(updated);
-    saveArmies(updated);
-  }, []);
+  const handleSort = useCallback((col: SortCol) => {
+    if (sortBy === col) {
+      setSortDir((d) => d === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(col);
+      setSortDir("desc");
+    }
+  }, [sortBy]);
 
-  // ── Export / Import ──
-  const exportArmies = () => {
-    const blob = new Blob([JSON.stringify(armies, null, 2)], { type: "application/json" });
+  const parentMap = useMemo(
+    () => Object.fromEntries(projects.map((p) => [p.id, p.name])),
+    [projects]
+  );
+
+  const filtered = useMemo(() => {
+    const base = filterType ? projects.filter((p) => p.type === filterType) : projects;
+    return sortProjects(base, sortBy, sortDir, parentMap);
+  }, [projects, filterType, sortBy, sortDir, parentMap]);
+
+  const exportProjects = () => {
+    const blob = new Blob([JSON.stringify(projects, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -92,645 +109,164 @@ export default function PlannerPage() {
     URL.revokeObjectURL(url);
   };
 
-  const importArmies = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const importProjects = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     file.text().then((text) => {
       try {
         const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          persist(parsed);
-        }
-      } catch { /* ignore bad JSON */ }
+        if (Array.isArray(parsed)) persist(parsed);
+      } catch { /* ignore */ }
     });
     e.target.value = "";
   };
 
-  // Derived selections
-  const army = armies.find((a) => a.id === selectedArmy);
-  const unit = army?.units.find((u) => u.id === selectedUnit);
-  const model = unit?.models.find((m) => m.id === selectedModel);
-  const scheme = model?.schemeId ? army?.schemes.find((s) => s.id === model.schemeId) : null;
-
-  // ── Army CRUD ──
-  const addArmy = () => {
-    if (!newArmyName.trim()) return;
-    const a = createArmy(newArmyName.trim());
-    persist([...armies, a]);
-    setSelectedArmy(a.id);
-    setNewArmyName("");
-  };
-
-  const deleteArmy = (id: string) => {
-    persist(armies.filter((a) => a.id !== id));
-    if (selectedArmy === id) setSelectedArmy(null);
-  };
-
-  // ── Unit CRUD ──
-  const addUnit = () => {
-    if (!army || !newUnitName.trim()) return;
-    const u = createUnit(newUnitName.trim());
-    persist(armies.map((a) => a.id === army.id ? { ...a, units: [...a.units, u] } : a));
-    setSelectedUnit(u.id);
-    setNewUnitName("");
-  };
-
-  const deleteUnit = (id: string) => {
-    if (!army) return;
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, units: a.units.filter((u) => u.id !== id) } : a));
-    if (selectedUnit === id) setSelectedUnit(null);
-  };
-
-  // ── Model CRUD ──
-  const addModel = () => {
-    if (!army || !unit || !newModelName.trim()) return;
-    const m = createModel(newModelName.trim());
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, units: a.units.map((u) => u.id === unit.id
-          ? { ...u, models: [...u.models, m] } : u) } : a));
-    setSelectedModel(m.id);
-    setNewModelName("");
-  };
-
-  const deleteModel = (id: string) => {
-    if (!army || !unit) return;
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, units: a.units.map((u) => u.id === unit.id
-          ? { ...u, models: u.models.filter((m) => m.id !== id) } : u) } : a));
-    if (selectedModel === id) setSelectedModel(null);
-  };
-
-  // ── Update model field ──
-  const updateModel = useCallback((field: Partial<Model>) => {
-    if (!army || !unit || !model) return;
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, units: a.units.map((u) => u.id === unit.id
-          ? { ...u, models: u.models.map((m) => m.id === model.id ? { ...m, ...field } : m) } : u) } : a));
-  }, [armies, army, unit, model, persist]);
-
-  // ── Scheme ──
-  const addScheme = () => {
-    if (!army || !newSchemeName.trim()) return;
-    const s = createScheme(newSchemeName.trim());
-    persist(armies.map((a) => a.id === army.id ? { ...a, schemes: [...a.schemes, s] } : a));
-    setNewSchemeName("");
-    if (model) updateModel({ schemeId: s.id });
-  };
-
-  const assignScheme = (schemeId: string) => {
-    updateModel({ schemeId });
-  };
-
-  // ── Layer ──
-  const addLayer = (role: LayerRole) => {
-    if (!army || !scheme) return;
-    const layer = createLayer(role);
-    const updated = { ...scheme, layers: [...scheme.layers, layer] };
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, schemes: a.schemes.map((s) => s.id === scheme.id ? updated : s) } : a));
-  };
-
-  const updateLayer = (layerId: string, field: Partial<SchemeLayer>) => {
-    if (!army || !scheme) return;
-    const updated = {
-      ...scheme,
-      layers: scheme.layers.map((l) => l.id === layerId ? { ...l, ...field } : l),
-    };
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, schemes: a.schemes.map((s) => s.id === scheme.id ? updated : s) } : a));
-  };
-
-  const deleteLayer = (layerId: string) => {
-    if (!army || !scheme) return;
-    const updated = { ...scheme, layers: scheme.layers.filter((l) => l.id !== layerId) };
-    persist(armies.map((a) => a.id === army.id
-      ? { ...a, schemes: a.schemes.map((s) => s.id === scheme.id ? updated : s) } : a));
-  };
-
-  // ── Brainstorm ──
-  const addBrainstorm = () => {
-    if (!brainstormInput.trim() || !model) return;
-    updateModel({ brainstorm: [...(model.brainstorm || []), brainstormInput.trim()] });
-    setBrainstormInput("");
-  };
-
-  const removeBrainstorm = (i: number) => {
-    if (!model) return;
-    updateModel({ brainstorm: model.brainstorm.filter((_, idx) => idx !== i) });
-  };
-
-  // ── Silhouette zone colors ──
-  const zoneColors: Partial<Record<BodyZone, string>> = {};
-  if (scheme) {
-    for (const layer of scheme.layers) {
-      if (layer.zone && layer.paintHex) {
-        zoneColors[layer.zone] = layer.paintHex;
-      }
-    }
-  }
-
-  const progress = model ? getModelProgress(model, armies) : 0;
-
   return (
-    <>
-    <div className="flex flex-col md:flex-row h-full overflow-hidden">
-      {/* ── Mobile: Army tree toggle bar ── */}
-      <div className="md:hidden border-b border-border px-3 py-1.5 flex items-center justify-between shrink-0">
-        <span className="text-[13px] text-green glow-green tracking-widest font-semibold">┌─[ PAINT PLANNER ]</span>
-        <button
-          className="btn-terminal text-xs px-2 py-0.5"
-          onClick={() => setShowTree(!showTree)}
-        >
-          {showTree ? "▲ CLOSE" : "▼ PROJECTS"}
-        </button>
-      </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* ── Header bar ── */}
+      <div className="border-b border-border px-4 py-2 flex flex-wrap items-center gap-2 shrink-0">
+        <span className="text-green glow-green text-base tracking-widest font-semibold shrink-0">
+          ┌─[ PAINT PLANNER ]
+        </span>
 
-      {/* ── LEFT: Army tree ── */}
-      <div className={`w-full md:w-56 border-b md:border-b-0 md:border-r border-border flex-col flex-shrink-0 ${showTree ? "flex" : "hidden md:flex"}`}>
-        <div className="border-b border-border px-3 py-2 hidden md:flex items-center gap-2">
-          <span className="text-[13px] text-green glow-green tracking-widest font-semibold">
-            ┌─[ PAINT PLANNER ]
-          </span>
-        </div>
-        {/* Sync status bar */}
-        <div className={`px-3 py-1 border-b border-border/40 flex items-center gap-2 text-xs
-          ${syncStatus === "synced" ? "text-green-dim" :
-            syncStatus === "syncing" ? "text-cyan-dim" :
-            syncStatus === "error" ? "text-red/70" :
-            "text-green-dim/40"}`}
-        >
-          {!isAuthenticated ? (
-            <>
-              <span>LOCAL ONLY</span>
-              <Link href="/auth/signin" className="text-cyan hover:glow-cyan ml-auto">SIGN IN →</Link>
-            </>
-          ) : syncStatus === "syncing" ? (
-            <><span className="blink">●</span><span>SYNCING<span className="blink">_</span></span></>
-          ) : syncStatus === "synced" ? (
-            <><span>✓</span><span>SYNCED {lastSynced ? new Date(lastSynced).toLocaleTimeString() : ""}</span></>
-          ) : syncStatus === "error" ? (
-            <><span>!</span><span>SYNC ERROR</span></>
-          ) : syncStatus === "offline" ? (
-            <><span>○</span><span>OFFLINE — LOCAL ONLY</span></>
-          ) : (
-            <span>{session?.user?.email?.split("@")[0] ?? "CLOUD"} SYNC ACTIVE</span>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {armies.map((a) => (
-            <div key={a.id}>
-              <div
-                className={`flex items-center gap-1 px-2 py-1 cursor-pointer border text-[13px]
-                  ${selectedArmy === a.id ? "border-green bg-green-faint text-green" : "border-transparent text-green-dim hover:text-green hover:border-border"}`}
-                onClick={() => { setSelectedArmy(a.id); setSelectedUnit(null); setSelectedModel(null); }}
-              >
-                <span className="flex-1 truncate font-semibold">{a.name}</span>
-                <span className="text-sm" style={{ color: PRIORITY_COLORS[a.priority] }}>
-                  {PRIORITY_ICONS[a.priority]}
-                </span>
-                <button className="text-red opacity-60 hover:opacity-100 ml-1" onClick={(e) => { e.stopPropagation(); deleteArmy(a.id); }}>×</button>
-              </div>
-
-              {selectedArmy === a.id && (
-                <div className="pl-3">
-                  {a.units.map((u) => (
-                    <div key={u.id}>
-                      <div
-                        className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-xs
-                          ${selectedUnit === u.id ? "border-cyan/60 text-cyan" : "border-transparent text-green-dim hover:text-green"}`}
-                        onClick={() => { setSelectedUnit(u.id); setSelectedModel(null); }}
-                      >
-                        <span className="flex-1 truncate">▸ {u.name}</span>
-                        <button className="text-red opacity-60 hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteUnit(u.id); }}>×</button>
-                      </div>
-
-                      {selectedUnit === u.id && (
-                        <div className="pl-3">
-                          {u.models.map((m) => (
-                            <div
-                              key={m.id}
-                              className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-sm
-                                ${selectedModel === m.id ? "border-amber/60 text-amber" : "border-transparent text-green-dim hover:text-green"}`}
-                              onClick={() => { setSelectedModel(m.id); setShowTree(false); }}
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[m.status] }} />
-                              <span className="flex-1 truncate">» {m.name}</span>
-                              <button className="text-red opacity-60 hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteModel(m.id); }}>×</button>
-                            </div>
-                          ))}
-
-                          {/* Add model */}
-                          <div className="flex gap-1 mt-0.5 pl-2">
-                            <input
-                              type="text" value={newModelName}
-                              onChange={(e) => setNewModelName(e.target.value)}
-                              onKeyDown={(e) => e.key === "Enter" && addModel()}
-                              placeholder="miniature..."
-                              className="flex-1 text-xs py-0.5 px-1"
-                            />
-                            <button className="btn-terminal text-sm px-1" onClick={addModel}>+</button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Add unit */}
-                  <div className="flex gap-1 mt-0.5">
-                    <input
-                      type="text" value={newUnitName}
-                      onChange={(e) => setNewUnitName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addUnit()}
-                      placeholder="group name..."
-                      className="flex-1 text-xs py-0.5 px-1"
-                    />
-                    <button className="btn-terminal text-sm px-1" onClick={addUnit}>+</button>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Type filter */}
+        <div className="flex gap-1 flex-wrap">
+          <button
+            className={`btn-terminal text-xs px-2 py-0.5 ${filterType === "" ? "active" : ""}`}
+            onClick={() => setFilterType("")}
+          >
+            ALL
+          </button>
+          {PROJECT_TYPES.map((t) => (
+            <button
+              key={t}
+              className={`btn-terminal text-xs px-2 py-0.5 ${filterType === t ? "active" : ""}`}
+              onClick={() => setFilterType(filterType === t ? "" : t)}
+            >
+              {PROJECT_TYPE_LABELS[t]}
+            </button>
           ))}
         </div>
 
-        {/* Add army */}
-        <div className="border-t border-border p-2 flex gap-1">
-          <input
-            type="text" value={newArmyName}
-            onChange={(e) => setNewArmyName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addArmy()}
-            placeholder="new project..."
-            className="flex-1 text-[13px] py-1 px-2"
-          />
-          <button className="btn-terminal text-[13px] px-2" onClick={addArmy}>+</button>
-        </div>
+        <div className="flex-1" />
 
         {/* Export / Import */}
-        <div className="border-t border-border/40 p-2 flex gap-1">
-          <button
-            className="btn-terminal text-xs px-2 py-1 flex-1"
-            onClick={exportArmies}
-            title="Export projects as JSON"
-          >
-            ↓ EXPORT
-          </button>
-          <label className="btn-terminal text-xs px-2 py-1 flex-1 text-center cursor-pointer" title="Import projects from JSON">
-            ↑ IMPORT
-            <input type="file" accept=".json" className="hidden" onChange={importArmies} />
-          </label>
-        </div>
+        <button
+          className="btn-terminal text-xs px-2 py-0.5"
+          onClick={exportProjects}
+          title="Export projects as JSON"
+        >
+          ↓ EXPORT
+        </button>
+        <label className="btn-terminal text-xs px-2 py-0.5 cursor-pointer" title="Import projects from JSON">
+          ↑ IMPORT
+          <input type="file" accept=".json" className="hidden" onChange={importProjects} />
+        </label>
+
+        {/* New project */}
+        <button
+          className="btn-terminal btn-cyan text-[13px] px-4 py-1 shrink-0"
+          onClick={() => { setEditProject(null); setShowModal(true); }}
+        >
+          + NEW PROJECT
+        </button>
       </div>
 
-      {/* ── RIGHT: Model detail ── */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {/* Wheel palette import banner */}
-        {wheelPalette && wheelPalette.length > 0 && (
-          <div className="border-b border-cyan/40 bg-cyan/5 px-4 py-2 flex items-center gap-3">
-            <span className="text-cyan text-[13px] tracking-widest">COLOUR WHEEL PALETTE READY:</span>
-            <div className="flex gap-1">
-              {wheelPalette.map((c, i) => (
-                <div key={i} className="w-6 h-6 border border-border/60" style={{ backgroundColor: c.hex }} title={c.hex} />
-              ))}
-            </div>
-            <span className="text-green-dim text-xs ml-2">Select a scheme below then assign these colours to layers.</span>
+      {/* ── Content ── */}
+      <div className="flex-1 overflow-y-auto">
+        {!isReady ? (
+          <div className="flex items-center justify-center h-32">
+            <span className="text-green-dim text-xs">LOADING<span className="blink">_</span></span>
+          </div>
+        ) : projects.length === 0 ? (
+          /* ── Empty state ── */
+          <div className="flex flex-col items-center justify-center h-full gap-5 p-8">
+            <span className="text-green glow-green text-base tracking-widest font-semibold">
+              ┌─[ PAINT PLANNER ]
+            </span>
+            <p className="text-green-dim text-[13px] text-center max-w-md leading-relaxed">
+              Plan your paint projects — track progress, build colour palettes, and
+              organise models, units, armies, or terrain all in one place.
+            </p>
             <button
-              className="btn-terminal btn-cyan text-xs px-2 ml-auto"
-              onClick={() => { localStorage.removeItem("ppp_wheel_palette"); setWheelPalette(null); }}
+              className="btn-terminal btn-cyan text-[13px] px-8 py-2"
+              onClick={() => setShowModal(true)}
             >
-              ✕ DISMISS
+              + CREATE FIRST PROJECT
             </button>
           </div>
-        )}
-
-        {!model ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-            {armies.length === 0 ? (
-              <>
-                <span className="text-green glow-green text-base tracking-widest font-semibold">┌─[ PAINT PLANNER ]</span>
-                <p className="text-green-dim text-[13px] text-center max-w-sm leading-relaxed">
-                  Plan paint schemes for any miniature — single models, units, terrain, or full armies.
-                </p>
-                <div className="text-green-dim text-xs text-center space-y-1 max-w-xs">
-                  <div>1. Create a <span className="text-green">project</span> in the left sidebar</div>
-                  <div>2. Add a <span className="text-green">group</span> (unit, batch, etc.)</div>
-                  <div>3. Add <span className="text-green">miniatures</span> to the group</div>
-                  <div>4. Click a miniature to plan its paint scheme</div>
-                </div>
-                <button
-                  className="btn-terminal btn-cyan text-[13px] px-6 py-2 mt-2"
-                  onClick={() => setShowTree(true)}
-                >
-                  + START A PROJECT
-                </button>
-              </>
-            ) : !army ? (
-              <span className="text-green-dim text-[13px] tracking-widest">SELECT A PROJECT →</span>
-            ) : !unit ? (
-              <div className="text-center space-y-2">
-                <span className="text-green text-[13px] font-semibold">{army.name}</span>
-                <p className="text-green-dim text-xs">Add a group in the sidebar to organise your miniatures.</p>
-              </div>
-            ) : (
-              <div className="text-center space-y-2">
-                <span className="text-green text-[13px] font-semibold">{army.name} › {unit.name}</span>
-                <p className="text-green-dim text-xs">Add a miniature in the sidebar, then click it to start planning.</p>
-              </div>
-            )}
-          </div>
         ) : (
-          <div className="p-4 space-y-4">
-            {/* Model header */}
-            <div className="border border-border p-3 bg-surface">
-              <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
-                <div>
-                  <h2 className="text-green glow-green text-base font-semibold">{model.name}</h2>
-                  <div className="text-green-dim text-[13px]">{army?.name} › {unit?.name}</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {/* Priority selector */}
-                  <div className="flex gap-1">
-                    {(["low", "med", "high"] as Priority[]).map((p) => (
-                      <button
-                        key={p}
-                        className={`btn-terminal text-xs px-2 py-0.5 ${model.priority === p ? "active" : ""}`}
-                        style={model.priority === p ? { borderColor: PRIORITY_COLORS[p], color: PRIORITY_COLORS[p] } : {}}
-                        onClick={() => updateModel({ priority: p })}
-                      >
-                        {PRIORITY_ICONS[p]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <div className="p-4 space-y-6">
+            {/* ── Project cards grid ── */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] text-green-dim tracking-widest">
+                  PROJECTS ({filtered.length})
+                </span>
               </div>
-
-              {/* Status row */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {STATUS_FLOW.map((s) => (
-                  <button
-                    key={s}
-                    className={`btn-terminal text-xs px-2 py-0.5 transition-all ${model.status === s ? "active" : ""}`}
-                    style={model.status === s ? { borderColor: STATUS_COLORS[s], color: STATUS_COLORS[s] } : {}}
-                    onClick={() => updateModel({ status: s })}
-                  >
-                    {STATUS_LABELS[s]}
-                  </button>
-                ))}
-              </div>
-
-              {/* Progress bar */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-green-dim">PROGRESS</span>
-                <div className="flex-1 h-2 bg-surface-2 border border-border">
-                  <div
-                    className="h-full transition-all duration-300"
-                    style={{
-                      width: `${progress}%`,
-                      backgroundColor: STATUS_COLORS[model.status],
-                      boxShadow: `0 0 6px ${STATUS_COLORS[model.status]}`,
-                    }}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                {filtered.map((p) => (
+                  <ProjectCard
+                    key={p.id}
+                    project={p}
+                    parentName={p.parentId ? parentMap[p.parentId] : undefined}
+                    onClick={handleEdit}
                   />
-                </div>
-                <span className="text-sm text-green font-mono w-8">{progress}%</span>
-              </div>
-
-              {/* Silhouette type selector */}
-              <div className="flex gap-1 mt-3">
-                <span className="text-sm text-green-dim self-center mr-1">TYPE:</span>
-                {SILHOUETTE_TYPES.map((t) => (
-                  <button
-                    key={t}
-                    className={`btn-terminal text-xs px-2 py-0.5 ${model.silhouetteType === t ? "active" : ""}`}
-                    onClick={() => updateModel({ silhouetteType: t })}
-                  >
-                    {t.toUpperCase()}
-                  </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-1">
-              {([["paints", "PAINTS"], ["diagram", "DIAGRAM"], ["notes", "NOTES"]] as const).map(([t, label]) => (
+                {/* Add new card */}
                 <button
-                  key={t}
-                  className={`btn-terminal text-[13px] px-4 py-1 ${tab === t ? "active" : ""}`}
-                  onClick={() => setTab(t)}
+                  className="border border-dashed border-border hover:border-green transition-colors flex flex-col items-center justify-center aspect-square text-green-dim hover:text-green gap-1"
+                  onClick={() => { setEditProject(null); setShowModal(true); }}
                 >
-                  {label}
+                  <span className="text-2xl leading-none">+</span>
+                  <span className="text-[10px] tracking-wider">NEW</span>
                 </button>
-              ))}
+              </div>
             </div>
 
-            {/* Tab: Paints */}
-            {tab === "paints" && (
-              <div className="space-y-3">
-                {/* Scheme selector */}
-                <TerminalBox title="PAINT SCHEME">
-                  <div className="flex gap-2 mb-3">
-                    <select
-                      value={model.schemeId || ""}
-                      onChange={(e) => assignScheme(e.target.value)}
-                      className="flex-1 text-xs"
+            {/* ── Projects table ── */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[11px] text-green-dim tracking-widest">ALL PROJECTS</span>
+                <div className="flex gap-1 ml-auto text-[11px] text-green-dim items-center">
+                  <span>SORT:</span>
+                  {(["priority", "status", "name", "type", "parent"] as SortCol[]).map((col) => (
+                    <button
+                      key={col}
+                      className={`btn-terminal text-[11px] px-2 py-0 ${sortBy === col ? "active" : ""}`}
+                      onClick={() => handleSort(col)}
                     >
-                      <option value="">— no scheme —</option>
-                      {army?.schemes.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="text" value={newSchemeName}
-                      onChange={(e) => setNewSchemeName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && addScheme()}
-                      placeholder="new scheme name"
-                      className="flex-1 text-xs"
-                    />
-                    <button className="btn-terminal text-[13px] px-2" onClick={addScheme}>CREATE</button>
-                  </div>
-
-                  {/* Layers */}
-                  {scheme && (
-                    <div>
-                      <div className="overflow-x-auto">
-                      <div className="min-w-[480px]">
-                      <div className="grid grid-cols-[24px_1fr_80px_100px_32px_28px] gap-x-2 text-sm text-green-dim mb-1 px-1">
-                        <span>#</span><span>ROLE</span><span>PAINT</span><span>HEX</span><span>ZONE</span><span></span>
-                      </div>
-                      {scheme.layers.map((layer, i) => (
-                        <div
-                          key={layer.id}
-                          className={`grid grid-cols-[24px_1fr_80px_100px_32px_28px] gap-x-2 items-center py-1 px-1 border-b border-border/30
-                            ${layer.done ? "opacity-50" : ""}`}
-                        >
-                          <button
-                            className={`w-5 h-5 border text-center text-xs ${layer.done ? "border-green bg-green/20 text-green" : "border-border text-green-dim"}`}
-                            onClick={() => updateLayer(layer.id, { done: !layer.done })}
-                          >
-                            {layer.done ? "✓" : String(i + 1).padStart(2, "0")}
-                          </button>
-                          <span className="text-sm text-green uppercase">{layer.role}</span>
-                          <div className="flex items-center gap-0.5">
-                            <input
-                              type="text"
-                              value={layer.paintName}
-                              onChange={(e) => updateLayer(layer.id, { paintName: e.target.value })}
-                              placeholder="paint name"
-                              className="flex-1 text-xs py-0.5 px-1 border-border min-w-0"
-                            />
-                            <button
-                              className="text-xs text-cyan hover:glow-cyan shrink-0 px-0.5"
-                              title="Search paint library"
-                              onClick={() => setPickerForLayer(layer.id)}
-                            >⌕</button>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-4 h-4 border border-border/60 flex-shrink-0" style={{ backgroundColor: layer.paintHex || "#111" }} />
-                            <input
-                              type="text"
-                              value={layer.paintHex}
-                              onChange={(e) => updateLayer(layer.id, { paintHex: e.target.value.toUpperCase() })}
-                              placeholder="#000000"
-                              maxLength={7}
-                              className="flex-1 text-xs py-0.5 px-1 font-mono border-border"
-                            />
-                          </div>
-                          <select
-                            value={layer.zone || ""}
-                            onChange={(e) => updateLayer(layer.id, { zone: (e.target.value as BodyZone) || null })}
-                            className="text-sm py-0 px-0.5 border-border"
-                          >
-                            <option value="">-</option>
-                            <option value="head">HEAD</option>
-                            <option value="torso">TORSO</option>
-                            <option value="left-arm">L-ARM</option>
-                            <option value="right-arm">R-ARM</option>
-                            <option value="left-leg">L-LEG</option>
-                            <option value="right-leg">R-LEG</option>
-                            <option value="weapon">WEAPON</option>
-                            <option value="base">BASE</option>
-                            <option value="hull">HULL</option>
-                            <option value="turret">TURRET</option>
-                            <option value="tracks">TRACKS</option>
-                            <option value="body">BODY</option>
-                            <option value="wings">WINGS</option>
-                            <option value="structure">STRUCT</option>
-                            <option value="ground">GROUND</option>
-                          </select>
-                          <button
-                            className="btn-terminal text-xs px-1 py-0"
-                            onClick={() => deleteLayer(layer.id)}
-                          >×</button>
-                        </div>
-                      ))}
-
-                      </div>{/* min-w */}
-                      </div>{/* overflow-x-auto */}
-
-                      {/* Add layer */}
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {LAYER_ROLES.map((role) => (
-                          <button
-                            key={role}
-                            className="btn-terminal text-xs px-2 py-0.5"
-                            onClick={() => addLayer(role)}
-                          >
-                            + {role}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TerminalBox>
-              </div>
-            )}
-
-            {/* Tab: Diagram */}
-            {tab === "diagram" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TerminalBox title="MODEL DIAGRAM" color="cyan">
-                  <BodySilhouette
-                    type={model.silhouetteType}
-                    zoneColors={zoneColors}
-                    activeZone={activeZone}
-                    onZoneClick={(zone) => setActiveZone(activeZone === zone ? null : zone)}
-                  />
-                  {activeZone && (
-                    <div className="mt-3 text-sm text-green-dim">
-                      SELECTED: <span className="text-cyan">{activeZone.toUpperCase()}</span>
-                      {" "}— assign a paint hex in the PAINTS tab and link it to this zone.
-                    </div>
-                  )}
-                </TerminalBox>
-
-                {/* Zone legend */}
-                <TerminalBox title="ZONE PAINT MAP">
-                  <div className="space-y-1">
-                    {Object.entries(zoneColors).map(([zone, hex]) => (
-                      <div key={zone} className="flex items-center gap-2">
-                        <div className="w-4 h-4 border border-border/60" style={{ backgroundColor: hex }} />
-                        <span className="text-sm text-green uppercase">{zone}</span>
-                        <span className="text-sm text-green-dim font-mono ml-auto">{hex}</span>
-                      </div>
-                    ))}
-                    {Object.keys(zoneColors).length === 0 && (
-                      <span className="text-sm text-green-dim">
-                        No zones assigned yet. Add paint layers with zones in the PAINTS tab.
-                      </span>
-                    )}
-                  </div>
-                </TerminalBox>
-              </div>
-            )}
-
-            {/* Tab: Notes */}
-            {tab === "notes" && (
-              <TerminalBox title="NOTES">
-                <div className="space-y-1 mb-3">
-                  {(model.brainstorm || []).map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 py-0.5">
-                      <span className="text-green-dim text-[13px]">›</span>
-                      <span className="flex-1 text-[13px] text-green">{item}</span>
-                      <button
-                        className="text-xs text-red opacity-60 hover:opacity-100"
-                        onClick={() => removeBrainstorm(i)}
-                      >×</button>
-                    </div>
+                      {col.toUpperCase()}
+                      {sortBy === col && (
+                        <span className="ml-0.5">{sortDir === "asc" ? "▲" : "▼"}</span>
+                      )}
+                    </button>
                   ))}
-                  {(model.brainstorm || []).length === 0 && (
-                    <span className="text-sm text-green-dim">No ideas yet. Add some below.</span>
-                  )}
                 </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={brainstormInput}
-                    onChange={(e) => setBrainstormInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addBrainstorm()}
-                    placeholder="idea, technique, color note..."
-                    className="flex-1 text-sm py-1"
-                  />
-                  <button className="btn-terminal text-[13px] px-3" onClick={addBrainstorm}>ADD</button>
-                </div>
-              </TerminalBox>
-            )}
+              </div>
+              <ProjectsTable
+                projects={filtered}
+                allProjects={projects}
+                sortBy={sortBy}
+                sortDir={sortDir}
+                onSort={handleSort}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
           </div>
         )}
       </div>
-    </div>
 
-      {/* Paint picker modal */}
-      {pickerForLayer && (
-        <PaintPicker
-          onClose={() => setPickerForLayer(null)}
-          onSelect={(paint) => {
-            updateLayer(pickerForLayer, {
-              paintName: paint.name,
-              paintHex: paint.hex,
-            });
-            setPickerForLayer(null);
-          }}
+      {/* ── Modal ── */}
+      {showModal && (
+        <NewProjectModal
+          projects={projects}
+          initialProject={editProject ?? undefined}
+          onConfirm={handleConfirm}
+          onClose={() => { setShowModal(false); setEditProject(null); }}
         />
       )}
-    </>
+    </div>
   );
 }

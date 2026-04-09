@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { getPaintsSync, loadPaints, filterPaints } from "@/lib/paints";
 import type { Paint } from "@/types/paint";
 
@@ -13,6 +14,12 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
   const [query, setQuery] = useState("");
   const [paints, setPaints] = useState<Paint[]>(getPaintsSync());
   const inputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -21,7 +28,6 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
     }
   }, [paints.length]);
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -32,16 +38,17 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
     ? filterPaints(paints, { search: query, hexOnly: true }).slice(0, 12)
     : [];
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-      onClick={onClose}
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60"
+      onClick={(e) => { e.stopPropagation(); onClose(); }}
     >
       <div
         className="bg-bg border border-green/60 box-glow w-full max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search input */}
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">
           <span className="text-green text-[13px] tracking-widest shrink-0">SEARCH PAINT</span>
           <input
@@ -55,7 +62,6 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
           <button onClick={onClose} className="text-green-dim hover:text-green text-xs">✕</button>
         </div>
 
-        {/* Results */}
         <div className="max-h-72 overflow-y-auto">
           {query.length < 2 ? (
             <div className="px-3 py-5 text-[13px] text-green-dim text-center">
@@ -84,6 +90,7 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

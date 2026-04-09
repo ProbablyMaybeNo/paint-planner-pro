@@ -1,37 +1,57 @@
 export type Priority = "low" | "med" | "high";
 
-export type ModelStatus =
-  | "planned"
+export type ProjectType = "model" | "unit" | "army" | "terrain";
+
+export type ProjectStatus =
+  | "built"
   | "primed"
-  | "base"
+  | "undercoated"
+  | "basecoated"
   | "shaded"
   | "highlighted"
-  | "edge"
-  | "complete";
+  | "detailed"
+  | "edge-highlighted"
+  | "completed";
 
-export type LayerRole =
+export type PaletteLayer =
   | "undercoat"
   | "basecoat"
-  | "shade"
-  | "layer"
+  | "midcoat"
   | "highlight"
+  | "shade"
   | "edge-highlight"
-  | "glaze"
-  | "drybrush"
-  | "detail"
-  | "varnish";
+  | "detail";
+
+export interface PaletteSlot {
+  hex: string;
+  paintName: string;
+  paintId: number | null;
+  layer: PaletteLayer | "";
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  type: ProjectType;
+  modelCount: number;
+  modelsCompleted: number;
+  status: ProjectStatus;
+  priority: Priority;
+  images: string[];
+  palette: PaletteSlot[];
+  parentId: string | null;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Legacy types kept for cloud sync compatibility ──
+export type LayerRole =
+  | "undercoat" | "basecoat" | "shade" | "layer" | "highlight"
+  | "edge-highlight" | "glaze" | "drybrush" | "detail" | "varnish";
 
 export type SilhouetteType = "infantry" | "vehicle" | "monster" | "terrain";
-
-export type BodyZone =
-  // Infantry
-  | "head" | "torso" | "left-arm" | "right-arm" | "left-leg" | "right-leg" | "base" | "weapon"
-  // Vehicle
-  | "hull" | "turret" | "tracks" | "gun" | "hatch" | "vehicle-base"
-  // Monster
-  | "head-m" | "body" | "wings" | "tail" | "claws" | "creature-base"
-  // Terrain
-  | "structure" | "ground" | "details" | "flora" | "rubble" | "terrain-base";
+export type BodyZone = string;
 
 export interface SchemeLayer {
   id: string;
@@ -55,7 +75,7 @@ export interface Model {
   id: string;
   name: string;
   silhouetteType: SilhouetteType;
-  status: ModelStatus;
+  status: string;
   priority: Priority;
   schemeId: string | null;
   brainstorm: string[];
