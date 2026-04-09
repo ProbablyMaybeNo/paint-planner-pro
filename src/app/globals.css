@@ -34,7 +34,7 @@ html, body {
   background: #000000;
   color: #00ff41;
   font-family: var(--font-terminal);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   overflow-x: hidden;
 }
@@ -116,7 +116,7 @@ input[type="text"], input[type="search"], textarea, select {
   color: #00ff41;
   border: 1px solid rgba(0, 255, 65, 0.3);
   font-family: var(--font-terminal);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   padding: 6px 10px;
 }
@@ -157,8 +157,8 @@ input[type="range"]::-webkit-slider-thumb {
   border: 1px solid rgba(0, 255, 65, 0.4);
   color: #00ff41;
   font-family: var(--font-terminal);
-  font-size: 12px;
-  padding: 5px 12px;
+  font-size: 13px;
+  padding: 6px 14px;
   cursor: pointer;
   letter-spacing: 0.05em;
   text-transform: uppercase;

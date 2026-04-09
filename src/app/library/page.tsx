@@ -222,7 +222,7 @@ function LibraryPageInner() {
           ) : (
             <div className="p-3">
               {/* Company group headers when sorting by company */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-9 xl:grid-cols-11 gap-1">
                 {paginated.map((paint) => (
                   <div key={paint.id} className="relative group">
                     <PaintCard
