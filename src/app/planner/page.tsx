@@ -21,7 +21,7 @@ export default function PlannerPage() {
   const [selectedArmy, setSelectedArmy] = useState<string | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [tab, setTab] = useState<"scheme" | "silhouette" | "brainstorm">("scheme");
+  const [tab, setTab] = useState<"paints" | "diagram" | "notes">("paints");
   const [activeZone, setActiveZone] = useState<BodyZone | null>(null);
   const [newArmyName, setNewArmyName] = useState("");
   const [newUnitName, setNewUnitName] = useState("");
@@ -87,7 +87,7 @@ export default function PlannerPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "paint-planner-armies.json";
+    a.download = "paint-planner-projects.json";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -237,12 +237,12 @@ export default function PlannerPage() {
     <div className="flex flex-col md:flex-row h-full overflow-hidden">
       {/* ── Mobile: Army tree toggle bar ── */}
       <div className="md:hidden border-b border-border px-3 py-1.5 flex items-center justify-between shrink-0">
-        <span className="text-[13px] text-green glow-green tracking-widest font-semibold">┌─[ TACTICAL PLANNER ]</span>
+        <span className="text-[13px] text-green glow-green tracking-widest font-semibold">┌─[ PAINT PLANNER ]</span>
         <button
           className="btn-terminal text-xs px-2 py-0.5"
           onClick={() => setShowTree(!showTree)}
         >
-          {showTree ? "▲ CLOSE" : "▼ ARMY TREE"}
+          {showTree ? "▲ CLOSE" : "▼ PROJECTS"}
         </button>
       </div>
 
@@ -250,7 +250,7 @@ export default function PlannerPage() {
       <div className={`w-full md:w-56 border-b md:border-b-0 md:border-r border-border flex-col flex-shrink-0 ${showTree ? "flex" : "hidden md:flex"}`}>
         <div className="border-b border-border px-3 py-2 hidden md:flex items-center gap-2">
           <span className="text-[13px] text-green glow-green tracking-widest font-semibold">
-            ┌─[ TACTICAL PLANNER ]
+            ┌─[ PAINT PLANNER ]
           </span>
         </div>
         {/* Sync status bar */}
@@ -327,7 +327,7 @@ export default function PlannerPage() {
                               type="text" value={newModelName}
                               onChange={(e) => setNewModelName(e.target.value)}
                               onKeyDown={(e) => e.key === "Enter" && addModel()}
-                              placeholder="model name"
+                              placeholder="miniature..."
                               className="flex-1 text-xs py-0.5 px-1"
                             />
                             <button className="btn-terminal text-sm px-1" onClick={addModel}>+</button>
@@ -343,7 +343,7 @@ export default function PlannerPage() {
                       type="text" value={newUnitName}
                       onChange={(e) => setNewUnitName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addUnit()}
-                      placeholder="unit name"
+                      placeholder="group name..."
                       className="flex-1 text-xs py-0.5 px-1"
                     />
                     <button className="btn-terminal text-sm px-1" onClick={addUnit}>+</button>
@@ -360,7 +360,7 @@ export default function PlannerPage() {
             type="text" value={newArmyName}
             onChange={(e) => setNewArmyName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addArmy()}
-            placeholder="new army"
+            placeholder="new project..."
             className="flex-1 text-[13px] py-1 px-2"
           />
           <button className="btn-terminal text-[13px] px-2" onClick={addArmy}>+</button>
@@ -371,11 +371,11 @@ export default function PlannerPage() {
           <button
             className="btn-terminal text-xs px-2 py-1 flex-1"
             onClick={exportArmies}
-            title="Export armies as JSON"
+            title="Export projects as JSON"
           >
             ↓ EXPORT
           </button>
-          <label className="btn-terminal text-xs px-2 py-1 flex-1 text-center cursor-pointer" title="Import armies from JSON">
+          <label className="btn-terminal text-xs px-2 py-1 flex-1 text-center cursor-pointer" title="Import projects from JSON">
             ↑ IMPORT
             <input type="file" accept=".json" className="hidden" onChange={importArmies} />
           </label>
@@ -404,10 +404,39 @@ export default function PlannerPage() {
         )}
 
         {!model ? (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-green-dim text-sm tracking-widest">
-              {armies.length === 0 ? "CREATE AN ARMY TO BEGIN" : "SELECT A MODEL"}
-            </span>
+          <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+            {armies.length === 0 ? (
+              <>
+                <span className="text-green glow-green text-base tracking-widest font-semibold">┌─[ PAINT PLANNER ]</span>
+                <p className="text-green-dim text-[13px] text-center max-w-sm leading-relaxed">
+                  Plan paint schemes for any miniature — single models, units, terrain, or full armies.
+                </p>
+                <div className="text-green-dim text-xs text-center space-y-1 max-w-xs">
+                  <div>1. Create a <span className="text-green">project</span> in the left sidebar</div>
+                  <div>2. Add a <span className="text-green">group</span> (unit, batch, etc.)</div>
+                  <div>3. Add <span className="text-green">miniatures</span> to the group</div>
+                  <div>4. Click a miniature to plan its paint scheme</div>
+                </div>
+                <button
+                  className="btn-terminal btn-cyan text-[13px] px-6 py-2 mt-2"
+                  onClick={() => setShowTree(true)}
+                >
+                  + START A PROJECT
+                </button>
+              </>
+            ) : !army ? (
+              <span className="text-green-dim text-[13px] tracking-widest">SELECT A PROJECT →</span>
+            ) : !unit ? (
+              <div className="text-center space-y-2">
+                <span className="text-green text-[13px] font-semibold">{army.name}</span>
+                <p className="text-green-dim text-xs">Add a group in the sidebar to organise your miniatures.</p>
+              </div>
+            ) : (
+              <div className="text-center space-y-2">
+                <span className="text-green text-[13px] font-semibold">{army.name} › {unit.name}</span>
+                <p className="text-green-dim text-xs">Add a miniature in the sidebar, then click it to start planning.</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-4 space-y-4">
@@ -482,19 +511,19 @@ export default function PlannerPage() {
 
             {/* Tabs */}
             <div className="flex gap-1">
-              {(["scheme", "silhouette", "brainstorm"] as const).map((t) => (
+              {([["paints", "PAINTS"], ["diagram", "DIAGRAM"], ["notes", "NOTES"]] as const).map(([t, label]) => (
                 <button
                   key={t}
                   className={`btn-terminal text-[13px] px-4 py-1 ${tab === t ? "active" : ""}`}
                   onClick={() => setTab(t)}
                 >
-                  {t.toUpperCase()}
+                  {label}
                 </button>
               ))}
             </div>
 
-            {/* Tab: Scheme */}
-            {tab === "scheme" && (
+            {/* Tab: Paints */}
+            {tab === "paints" && (
               <div className="space-y-3">
                 {/* Scheme selector */}
                 <TerminalBox title="PAINT SCHEME">
@@ -615,8 +644,8 @@ export default function PlannerPage() {
               </div>
             )}
 
-            {/* Tab: Silhouette */}
-            {tab === "silhouette" && (
+            {/* Tab: Diagram */}
+            {tab === "diagram" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TerminalBox title="MODEL DIAGRAM" color="cyan">
                   <BodySilhouette
@@ -628,7 +657,7 @@ export default function PlannerPage() {
                   {activeZone && (
                     <div className="mt-3 text-sm text-green-dim">
                       SELECTED: <span className="text-cyan">{activeZone.toUpperCase()}</span>
-                      {" "}— assign a paint hex in the SCHEME tab and link it to this zone.
+                      {" "}— assign a paint hex in the PAINTS tab and link it to this zone.
                     </div>
                   )}
                 </TerminalBox>
@@ -645,7 +674,7 @@ export default function PlannerPage() {
                     ))}
                     {Object.keys(zoneColors).length === 0 && (
                       <span className="text-sm text-green-dim">
-                        No zones assigned yet. Add paint layers with zones in the SCHEME tab.
+                        No zones assigned yet. Add paint layers with zones in the PAINTS tab.
                       </span>
                     )}
                   </div>
@@ -653,9 +682,9 @@ export default function PlannerPage() {
               </div>
             )}
 
-            {/* Tab: Brainstorm */}
-            {tab === "brainstorm" && (
-              <TerminalBox title="BRAINSTORM LIST">
+            {/* Tab: Notes */}
+            {tab === "notes" && (
+              <TerminalBox title="NOTES">
                 <div className="space-y-1 mb-3">
                   {(model.brainstorm || []).map((item, i) => (
                     <div key={i} className="flex items-center gap-2 py-0.5">

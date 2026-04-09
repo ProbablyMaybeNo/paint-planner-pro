@@ -1,7 +1,6 @@
 "use client";
 
 import { PAINT_TYPE_ICONS, type PaintTypeIcon } from "@/lib/paints";
-import type { Paint } from "@/types/paint";
 
 const TYPE_FILTER_KEYS = [
   "opaque", "transparent", "wash", "contrast", "metallic",
@@ -9,30 +8,33 @@ const TYPE_FILTER_KEYS = [
 ] as const;
 
 interface FilterPanelProps {
-  paints: Paint[];
   companies: string[];
-  company: string;
-  setCompany: (v: string) => void;
-  line: string;
-  setLine: (v: string) => void;
+  selectedCompanies: string[];
+  setSelectedCompanies: (v: string[]) => void;
   lines: string[];
-  paintType: string;
-  setPaintType: (v: string) => void;
+  selectedLines: string[];
+  setSelectedLines: (v: string[]) => void;
+  selectedTypes: string[];
+  setSelectedTypes: (v: string[]) => void;
   hexOnly: boolean;
   setHexOnly: (v: boolean) => void;
   resultCount: number;
   totalCount: number;
 }
 
+function toggle(arr: string[], val: string): string[] {
+  return arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
+}
+
 export default function FilterPanel({
   companies,
-  company,
-  setCompany,
-  line,
-  setLine,
+  selectedCompanies,
+  setSelectedCompanies,
   lines,
-  paintType,
-  setPaintType,
+  selectedLines,
+  setSelectedLines,
+  selectedTypes,
+  setSelectedTypes,
   hexOnly,
   setHexOnly,
   resultCount,
@@ -46,57 +48,86 @@ export default function FilterPanel({
         <div>of {totalCount.toLocaleString()} records</div>
       </div>
 
-      {/* Company */}
+      {/* Company toggles */}
       <div>
-        <div className="text-[13px] text-green-dim mb-1 tracking-widest">COMPANY</div>
-        <select
-          value={company}
-          onChange={(e) => { setCompany(e.target.value); setLine(""); }}
-          className="w-full text-xs bg-surface border-border"
-        >
-          <option value="">ALL</option>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[13px] text-green-dim tracking-widest">COMPANIES</span>
+          {selectedCompanies.length > 0 && (
+            <button
+              className="text-[11px] text-red opacity-70 hover:opacity-100"
+              onClick={() => setSelectedCompanies([])}
+            >
+              CLEAR
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5">
           {companies.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <button
+              key={c}
+              className={`btn-terminal text-left text-[13px] px-2 py-0.5 leading-snug ${selectedCompanies.includes(c) ? "active" : ""}`}
+              onClick={() => setSelectedCompanies(toggle(selectedCompanies, c))}
+            >
+              {selectedCompanies.includes(c) ? "■" : "□"} {c}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
-      {/* Line */}
-      {lines.length > 0 && (
+      {/* Line toggles — only shown when exactly one company selected */}
+      {selectedCompanies.length === 1 && lines.length > 0 && (
         <div>
-          <div className="text-[13px] text-green-dim mb-1 tracking-widest">LINE</div>
-          <select
-            value={line}
-            onChange={(e) => setLine(e.target.value)}
-            className="w-full text-xs bg-surface border-border"
-          >
-            <option value="">ALL</option>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[13px] text-green-dim tracking-widest">LINE</span>
+            {selectedLines.length > 0 && (
+              <button
+                className="text-[11px] text-red opacity-70 hover:opacity-100"
+                onClick={() => setSelectedLines([])}
+              >
+                CLEAR
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col gap-0.5">
             {lines.map((l) => (
-              <option key={l} value={l}>{l}</option>
+              <button
+                key={l}
+                className={`btn-terminal text-left text-[13px] px-2 py-0.5 leading-snug ${selectedLines.includes(l) ? "active" : ""}`}
+                onClick={() => setSelectedLines(toggle(selectedLines, l))}
+              >
+                {selectedLines.includes(l) ? "■" : "□"} {l}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       )}
 
-      {/* Paint Type */}
+      {/* Paint Type toggles */}
       <div>
-        <div className="text-[13px] text-green-dim mb-2 tracking-widest">PAINT TYPE</div>
-        <div className="flex flex-col gap-1">
-          <button
-            className={`btn-terminal text-left text-[13px] px-2 py-1 ${paintType === "" ? "active" : ""}`}
-            onClick={() => setPaintType("")}
-          >
-            ◈ ALL TYPES
-          </button>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[13px] text-green-dim tracking-widest">PAINT TYPE</span>
+          {selectedTypes.length > 0 && (
+            <button
+              className="text-[11px] text-red opacity-70 hover:opacity-100"
+              onClick={() => setSelectedTypes([])}
+            >
+              CLEAR
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col gap-0.5">
           {TYPE_FILTER_KEYS.map((t) => {
             const icon = PAINT_TYPE_ICONS[t] as PaintTypeIcon;
             return (
               <button
                 key={t}
-                className={`btn-terminal text-left text-[13px] px-2 py-1 ${paintType === t ? "active" : ""}`}
-                onClick={() => setPaintType(paintType === t ? "" : t)}
+                className={`btn-terminal text-left text-[13px] px-2 py-0.5 ${selectedTypes.includes(t) ? "active" : ""}`}
+                onClick={() => setSelectedTypes(toggle(selectedTypes, t))}
               >
-                <span style={{ color: icon.color }}>{icon.symbol}</span>
+                <span style={{ color: selectedTypes.includes(t) ? icon.color : undefined }}>
+                  {selectedTypes.includes(t) ? "■" : "□"}
+                  {" "}{icon.symbol}
+                </span>
                 {" "}{icon.label.toUpperCase()}
               </button>
             );

@@ -158,8 +158,11 @@ export function filterPaints(
   opts: {
     search?: string;
     company?: string;
+    companies?: string[];
     line?: string;
+    lines?: string[];
     type?: string;
+    types?: string[];
     hueMin?: number;
     hueMax?: number;
     hexOnly?: boolean;
@@ -187,15 +190,24 @@ export function filterPaints(
     }
   }
 
-  if (opts.company) {
+  // Multi-company takes precedence over single company
+  if (opts.companies && opts.companies.length > 0) {
+    result = result.filter((p) => opts.companies!.includes(p.company));
+  } else if (opts.company) {
     result = result.filter((p) => p.company === opts.company);
   }
 
-  if (opts.line) {
+  // Multi-line takes precedence over single line
+  if (opts.lines && opts.lines.length > 0) {
+    result = result.filter((p) => opts.lines!.includes(p.line));
+  } else if (opts.line) {
     result = result.filter((p) => p.line === opts.line);
   }
 
-  if (opts.type) {
+  // Multi-type takes precedence over single type
+  if (opts.types && opts.types.length > 0) {
+    result = result.filter((p) => opts.types!.includes(inferPaintType(p)));
+  } else if (opts.type) {
     result = result.filter((p) => inferPaintType(p) === opts.type);
   }
 

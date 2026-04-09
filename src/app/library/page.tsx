@@ -18,9 +18,11 @@ function LibraryPageInner() {
   const [paints, setPaints] = useState<Paint[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [company, setCompany] = useState(searchParams.get("company") || "");
-  const [line, setLine] = useState("");
-  const [paintType, setPaintType] = useState("");
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>(
+    searchParams.get("company") ? [searchParams.get("company")!] : []
+  );
+  const [selectedLines, setSelectedLines] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [hexOnly, setHexOnly] = useState(true);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Paint | null>(null);
@@ -41,14 +43,17 @@ function LibraryPageInner() {
   }, []);
 
   const companies = useMemo(() => getCompanies(paints), [paints]);
-  const lines = useMemo(() => getLines(paints, company || undefined), [paints, company]);
+  const lines = useMemo(
+    () => selectedCompanies.length === 1 ? getLines(paints, selectedCompanies[0]) : [],
+    [paints, selectedCompanies]
+  );
 
   const filtered = useMemo(() => {
     const base = filterPaints(paints, {
       search,
-      company,
-      line,
-      type: paintType || undefined,
+      companies: selectedCompanies.length > 0 ? selectedCompanies : undefined,
+      lines: selectedLines.length > 0 ? selectedLines : undefined,
+      types: selectedTypes.length > 0 ? selectedTypes : undefined,
       hexOnly,
       hueMin: activeHue ? hueMin : undefined,
       hueMax: activeHue ? hueMax : undefined,
@@ -77,13 +82,15 @@ function LibraryPageInner() {
         return getHue(a.hex) - getHue(b.hex);
       });
     }
-  }, [paints, search, company, line, paintType, hexOnly, activeHue, hueMin, hueMax, sortBy]);
+  }, [paints, search, selectedCompanies, selectedLines, selectedTypes, hexOnly, activeHue, hueMin, hueMax, sortBy]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
-  const handleCompany = useCallback((v: string) => { setCompany(v); setLine(""); setPage(1); }, []);
+  const handleSelectedCompanies = useCallback((v: string[]) => { setSelectedCompanies(v); setSelectedLines([]); setPage(1); }, []);
+  const handleSelectedLines = useCallback((v: string[]) => { setSelectedLines(v); setPage(1); }, []);
+  const handleSelectedTypes = useCallback((v: string[]) => { setSelectedTypes(v); setPage(1); }, []);
 
   const setActiveHue = useCallback((seg: string, min: number, max: number) => {
     setActiveHueState(seg);
@@ -181,15 +188,14 @@ function LibraryPageInner() {
           {!loading && (
             <>
               <FilterPanel
-                paints={paints}
                 companies={companies}
-                company={company}
-                setCompany={handleCompany}
-                line={line}
-                setLine={setLine}
+                selectedCompanies={selectedCompanies}
+                setSelectedCompanies={handleSelectedCompanies}
                 lines={lines}
-                paintType={paintType}
-                setPaintType={setPaintType}
+                selectedLines={selectedLines}
+                setSelectedLines={handleSelectedLines}
+                selectedTypes={selectedTypes}
+                setSelectedTypes={handleSelectedTypes}
                 hexOnly={hexOnly}
                 setHexOnly={setHexOnly}
                 resultCount={filtered.length}
@@ -215,7 +221,7 @@ function LibraryPageInner() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 gap-2">
               <span className="text-green-dim text-xs">NO RECORDS MATCH QUERY</span>
-              <button className="btn-terminal text-[13px]" onClick={() => { setSearch(""); setCompany(""); setLine(""); setPaintType(""); clearHue(); }}>
+              <button className="btn-terminal text-[13px]" onClick={() => { setSearch(""); setSelectedCompanies([]); setSelectedLines([]); setSelectedTypes([]); clearHue(); }}>
                 CLEAR ALL FILTERS
               </button>
             </div>
