@@ -11,8 +11,8 @@ export default function TypeLegend() {
       {LEGEND_TYPES.map((type) => {
         const icon = PAINT_TYPE_ICONS[type];
         return (
-          <span key={type} className="flex items-center gap-1 text-[10px] text-green-dim">
-            <span style={{ color: icon.color }} className="text-[11px]">{icon.symbol}</span>
+          <span key={type} className="flex items-center gap-1 text-[13px] text-green-dim">
+            <span style={{ color: icon.color }} className="text-sm">{icon.symbol}</span>
             {icon.label}
           </span>
         );

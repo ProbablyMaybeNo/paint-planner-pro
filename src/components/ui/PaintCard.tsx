@@ -35,20 +35,20 @@ export default function PaintCard({ paint, onClick, selected }: PaintCardProps) 
       {/* No hex placeholder */}
       {!hasHex && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-green-dim text-[8px]">NO HEX</span>
+          <span className="text-green-dim text-sm">NO HEX</span>
         </div>
       )}
 
       {/* Top row: name left, type right */}
       <div className="absolute top-0 left-0 right-0 flex justify-between items-start p-1 gap-0.5">
         <span
-          className="text-[8px] font-medium leading-tight line-clamp-2 flex-1 min-w-0"
+          className="text-sm font-medium leading-tight line-clamp-2 flex-1 min-w-0"
           style={{ color: ink }}
         >
           {paint.name}
         </span>
         <span
-          className="text-[10px] leading-none shrink-0 ml-0.5"
+          className="text-[13px] leading-none shrink-0 ml-0.5"
           style={{ color: ink }}
           title={icon.label}
         >

@@ -28,7 +28,7 @@ interface HueFilterProps {
 export default function HueFilter({ activeHue, setActiveHue, clearHue }: HueFilterProps) {
   return (
     <div>
-      <div className="text-[10px] text-green-dim mb-1.5 tracking-widest">HUE RANGE</div>
+      <div className="text-[13px] text-green-dim mb-1.5 tracking-widest">HUE RANGE</div>
       <div className="flex flex-col gap-0.5">
         {HUE_SEGMENTS.map((seg) => (
           <button
@@ -40,7 +40,7 @@ export default function HueFilter({ activeHue, setActiveHue, clearHue }: HueFilt
                 setActiveHue(seg.label, seg.hueMin, seg.hueMax);
               }
             }}
-            className={`flex items-center gap-1.5 px-2 py-0.5 border text-[10px] transition-all
+            className={`flex items-center gap-1.5 px-2 py-0.5 border text-[13px] transition-all
               ${activeHue === seg.label
                 ? "border-current bg-current/10"
                 : "border-transparent hover:border-border text-green-dim"
@@ -55,7 +55,7 @@ export default function HueFilter({ activeHue, setActiveHue, clearHue }: HueFilt
           </button>
         ))}
         {activeHue && (
-          <button className="btn-terminal text-[9px] px-2 py-0.5 mt-1" onClick={clearHue}>
+          <button className="btn-terminal text-xs px-2 py-0.5 mt-1" onClick={clearHue}>
             × CLEAR
           </button>
         )}

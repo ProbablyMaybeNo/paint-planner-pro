@@ -65,7 +65,7 @@ export default function BodySilhouette({ type, zoneColors, activeZone, onZoneCli
 
   return (
     <div className="flex flex-col items-center">
-      <div className="text-[9px] text-green-dim tracking-widest mb-1">{label} DIAGRAM</div>
+      <div className="text-sm text-green-dim tracking-widest mb-1">{label} DIAGRAM</div>
       <svg
         viewBox={viewBox}
         className="w-full max-w-[160px]"
@@ -99,7 +99,7 @@ export default function BodySilhouette({ type, zoneColors, activeZone, onZoneCli
             <button
               key={zone.id}
               onClick={() => onZoneClick(zone.id)}
-              className={`text-[8px] px-1 py-0.5 border transition-all
+              className={`text-sm px-1 py-0.5 border transition-all
                 ${activeZone === zone.id
                   ? "border-cyan text-cyan"
                   : hex

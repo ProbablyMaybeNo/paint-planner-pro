@@ -124,9 +124,9 @@ export default function HomePage() {
                     [{card.key}] {card.title}
                   </div>
                 </div>
-                <p className="text-[11px] text-green-dim leading-relaxed">{card.desc}</p>
+                <p className="text-sm text-green-dim leading-relaxed">{card.desc}</p>
                 <div
-                  className="mt-3 text-[10px] tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="mt-3 text-[13px] tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ color: card.color }}
                 >
                   ENTER →
@@ -145,8 +145,8 @@ export default function HomePage() {
             ].map((stat) => (
               <div key={stat.label} className="space-y-0.5">
                 <div className="text-lg text-green glow-green font-semibold">{stat.value}</div>
-                <div className="text-[9px] text-green-dim tracking-widest">{stat.label}</div>
-                <div className="text-[8px] text-green-dim opacity-50">{stat.note}</div>
+                <div className="text-sm text-green-dim tracking-widest">{stat.label}</div>
+                <div className="text-sm text-green-dim opacity-50">{stat.note}</div>
               </div>
             ))}
           </div>
@@ -154,7 +154,7 @@ export default function HomePage() {
           {/* Company grid */}
           <div className="border border-border bg-surface animate-fade-in">
             <div className="px-3 py-1.5 border-b border-border">
-              <span className="text-green text-[10px] tracking-widest glow-green">
+              <span className="text-green text-[13px] tracking-widest glow-green">
                 ┌─[ INDEXED PAINT COMPANIES ]
               </span>
             </div>
@@ -163,7 +163,7 @@ export default function HomePage() {
                 <Link
                   key={co}
                   href={`/library?company=${encodeURIComponent(co)}`}
-                  className="text-[10px] text-green-dim hover:text-green hover:glow-green truncate transition-colors"
+                  className="text-[13px] text-green-dim hover:text-green hover:glow-green truncate transition-colors"
                 >
                   › {co}
                 </Link>

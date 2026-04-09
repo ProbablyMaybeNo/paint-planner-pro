@@ -41,14 +41,14 @@ export default function FilterPanel({
   return (
     <div className="flex flex-col gap-4">
       {/* Stats */}
-      <div className="text-[10px] text-green-dim border-b border-border pb-3">
+      <div className="text-[13px] text-green-dim border-b border-border pb-3">
         <div className="text-green text-sm font-semibold glow-green">{resultCount.toLocaleString()}</div>
         <div>of {totalCount.toLocaleString()} records</div>
       </div>
 
       {/* Company */}
       <div>
-        <div className="text-[10px] text-green-dim mb-1 tracking-widest">COMPANY</div>
+        <div className="text-[13px] text-green-dim mb-1 tracking-widest">COMPANY</div>
         <select
           value={company}
           onChange={(e) => { setCompany(e.target.value); setLine(""); }}
@@ -64,7 +64,7 @@ export default function FilterPanel({
       {/* Line */}
       {lines.length > 0 && (
         <div>
-          <div className="text-[10px] text-green-dim mb-1 tracking-widest">LINE</div>
+          <div className="text-[13px] text-green-dim mb-1 tracking-widest">LINE</div>
           <select
             value={line}
             onChange={(e) => setLine(e.target.value)}
@@ -80,10 +80,10 @@ export default function FilterPanel({
 
       {/* Paint Type */}
       <div>
-        <div className="text-[10px] text-green-dim mb-2 tracking-widest">PAINT TYPE</div>
+        <div className="text-[13px] text-green-dim mb-2 tracking-widest">PAINT TYPE</div>
         <div className="flex flex-col gap-1">
           <button
-            className={`btn-terminal text-left text-[10px] px-2 py-1 ${paintType === "" ? "active" : ""}`}
+            className={`btn-terminal text-left text-[13px] px-2 py-1 ${paintType === "" ? "active" : ""}`}
             onClick={() => setPaintType("")}
           >
             ◈ ALL TYPES
@@ -93,7 +93,7 @@ export default function FilterPanel({
             return (
               <button
                 key={t}
-                className={`btn-terminal text-left text-[10px] px-2 py-1 ${paintType === t ? "active" : ""}`}
+                className={`btn-terminal text-left text-[13px] px-2 py-1 ${paintType === t ? "active" : ""}`}
                 onClick={() => setPaintType(paintType === t ? "" : t)}
               >
                 <span style={{ color: icon.color }}>{icon.symbol}</span>
@@ -107,7 +107,7 @@ export default function FilterPanel({
       {/* Hex only toggle */}
       <div>
         <button
-          className={`btn-terminal text-[10px] w-full ${hexOnly ? "active" : ""}`}
+          className={`btn-terminal text-[13px] w-full ${hexOnly ? "active" : ""}`}
           onClick={() => setHexOnly(!hexOnly)}
         >
           {hexOnly ? "[■]" : "[□]"} HEX DATA ONLY

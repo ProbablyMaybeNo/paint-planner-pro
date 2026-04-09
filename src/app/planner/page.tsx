@@ -237,9 +237,9 @@ export default function PlannerPage() {
     <div className="flex flex-col md:flex-row h-full overflow-hidden">
       {/* ── Mobile: Army tree toggle bar ── */}
       <div className="md:hidden border-b border-border px-3 py-1.5 flex items-center justify-between shrink-0">
-        <span className="text-[10px] text-green glow-green tracking-widest font-semibold">┌─[ TACTICAL PLANNER ]</span>
+        <span className="text-[13px] text-green glow-green tracking-widest font-semibold">┌─[ TACTICAL PLANNER ]</span>
         <button
-          className="btn-terminal text-[9px] px-2 py-0.5"
+          className="btn-terminal text-xs px-2 py-0.5"
           onClick={() => setShowTree(!showTree)}
         >
           {showTree ? "▲ CLOSE" : "▼ ARMY TREE"}
@@ -249,12 +249,12 @@ export default function PlannerPage() {
       {/* ── LEFT: Army tree ── */}
       <div className={`w-full md:w-56 border-b md:border-b-0 md:border-r border-border flex-col flex-shrink-0 ${showTree ? "flex" : "hidden md:flex"}`}>
         <div className="border-b border-border px-3 py-2 hidden md:flex items-center gap-2">
-          <span className="text-[10px] text-green glow-green tracking-widest font-semibold">
+          <span className="text-[13px] text-green glow-green tracking-widest font-semibold">
             ┌─[ TACTICAL PLANNER ]
           </span>
         </div>
         {/* Sync status bar */}
-        <div className={`px-3 py-1 border-b border-border/40 flex items-center gap-2 text-[9px]
+        <div className={`px-3 py-1 border-b border-border/40 flex items-center gap-2 text-xs
           ${syncStatus === "synced" ? "text-green-dim" :
             syncStatus === "syncing" ? "text-cyan-dim" :
             syncStatus === "error" ? "text-red/70" :
@@ -282,12 +282,12 @@ export default function PlannerPage() {
           {armies.map((a) => (
             <div key={a.id}>
               <div
-                className={`flex items-center gap-1 px-2 py-1 cursor-pointer border text-[10px]
+                className={`flex items-center gap-1 px-2 py-1 cursor-pointer border text-[13px]
                   ${selectedArmy === a.id ? "border-green bg-green-faint text-green" : "border-transparent text-green-dim hover:text-green hover:border-border"}`}
                 onClick={() => { setSelectedArmy(a.id); setSelectedUnit(null); setSelectedModel(null); }}
               >
                 <span className="flex-1 truncate font-semibold">{a.name}</span>
-                <span className="text-[8px]" style={{ color: PRIORITY_COLORS[a.priority] }}>
+                <span className="text-sm" style={{ color: PRIORITY_COLORS[a.priority] }}>
                   {PRIORITY_ICONS[a.priority]}
                 </span>
                 <button className="text-red opacity-60 hover:opacity-100 ml-1" onClick={(e) => { e.stopPropagation(); deleteArmy(a.id); }}>×</button>
@@ -298,7 +298,7 @@ export default function PlannerPage() {
                   {a.units.map((u) => (
                     <div key={u.id}>
                       <div
-                        className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-[9px]
+                        className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-xs
                           ${selectedUnit === u.id ? "border-cyan/60 text-cyan" : "border-transparent text-green-dim hover:text-green"}`}
                         onClick={() => { setSelectedUnit(u.id); setSelectedModel(null); }}
                       >
@@ -311,7 +311,7 @@ export default function PlannerPage() {
                           {u.models.map((m) => (
                             <div
                               key={m.id}
-                              className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-[8px]
+                              className={`flex items-center gap-1 px-2 py-0.5 cursor-pointer border text-sm
                                 ${selectedModel === m.id ? "border-amber/60 text-amber" : "border-transparent text-green-dim hover:text-green"}`}
                               onClick={() => { setSelectedModel(m.id); setShowTree(false); }}
                             >
@@ -328,9 +328,9 @@ export default function PlannerPage() {
                               onChange={(e) => setNewModelName(e.target.value)}
                               onKeyDown={(e) => e.key === "Enter" && addModel()}
                               placeholder="model name"
-                              className="flex-1 text-[9px] py-0.5 px-1"
+                              className="flex-1 text-xs py-0.5 px-1"
                             />
-                            <button className="btn-terminal text-[8px] px-1" onClick={addModel}>+</button>
+                            <button className="btn-terminal text-sm px-1" onClick={addModel}>+</button>
                           </div>
                         </div>
                       )}
@@ -344,9 +344,9 @@ export default function PlannerPage() {
                       onChange={(e) => setNewUnitName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addUnit()}
                       placeholder="unit name"
-                      className="flex-1 text-[9px] py-0.5 px-1"
+                      className="flex-1 text-xs py-0.5 px-1"
                     />
-                    <button className="btn-terminal text-[8px] px-1" onClick={addUnit}>+</button>
+                    <button className="btn-terminal text-sm px-1" onClick={addUnit}>+</button>
                   </div>
                 </div>
               )}
@@ -361,21 +361,21 @@ export default function PlannerPage() {
             onChange={(e) => setNewArmyName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addArmy()}
             placeholder="new army"
-            className="flex-1 text-[10px] py-1 px-2"
+            className="flex-1 text-[13px] py-1 px-2"
           />
-          <button className="btn-terminal text-[10px] px-2" onClick={addArmy}>+</button>
+          <button className="btn-terminal text-[13px] px-2" onClick={addArmy}>+</button>
         </div>
 
         {/* Export / Import */}
         <div className="border-t border-border/40 p-2 flex gap-1">
           <button
-            className="btn-terminal text-[9px] px-2 py-1 flex-1"
+            className="btn-terminal text-xs px-2 py-1 flex-1"
             onClick={exportArmies}
             title="Export armies as JSON"
           >
             ↓ EXPORT
           </button>
-          <label className="btn-terminal text-[9px] px-2 py-1 flex-1 text-center cursor-pointer" title="Import armies from JSON">
+          <label className="btn-terminal text-xs px-2 py-1 flex-1 text-center cursor-pointer" title="Import armies from JSON">
             ↑ IMPORT
             <input type="file" accept=".json" className="hidden" onChange={importArmies} />
           </label>
@@ -387,15 +387,15 @@ export default function PlannerPage() {
         {/* Wheel palette import banner */}
         {wheelPalette && wheelPalette.length > 0 && (
           <div className="border-b border-cyan/40 bg-cyan/5 px-4 py-2 flex items-center gap-3">
-            <span className="text-cyan text-[10px] tracking-widest">COLOUR WHEEL PALETTE READY:</span>
+            <span className="text-cyan text-[13px] tracking-widest">COLOUR WHEEL PALETTE READY:</span>
             <div className="flex gap-1">
               {wheelPalette.map((c, i) => (
                 <div key={i} className="w-6 h-6 border border-border/60" style={{ backgroundColor: c.hex }} title={c.hex} />
               ))}
             </div>
-            <span className="text-green-dim text-[9px] ml-2">Select a scheme below then assign these colours to layers.</span>
+            <span className="text-green-dim text-xs ml-2">Select a scheme below then assign these colours to layers.</span>
             <button
-              className="btn-terminal btn-cyan text-[9px] px-2 ml-auto"
+              className="btn-terminal btn-cyan text-xs px-2 ml-auto"
               onClick={() => { localStorage.removeItem("ppp_wheel_palette"); setWheelPalette(null); }}
             >
               ✕ DISMISS
@@ -405,7 +405,7 @@ export default function PlannerPage() {
 
         {!model ? (
           <div className="flex items-center justify-center h-full">
-            <span className="text-green-dim text-xs tracking-widest">
+            <span className="text-green-dim text-sm tracking-widest">
               {armies.length === 0 ? "CREATE AN ARMY TO BEGIN" : "SELECT A MODEL"}
             </span>
           </div>
@@ -415,8 +415,8 @@ export default function PlannerPage() {
             <div className="border border-border p-3 bg-surface">
               <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
                 <div>
-                  <h2 className="text-green glow-green text-sm font-semibold">{model.name}</h2>
-                  <div className="text-green-dim text-[10px]">{army?.name} › {unit?.name}</div>
+                  <h2 className="text-green glow-green text-base font-semibold">{model.name}</h2>
+                  <div className="text-green-dim text-[13px]">{army?.name} › {unit?.name}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   {/* Priority selector */}
@@ -424,7 +424,7 @@ export default function PlannerPage() {
                     {(["low", "med", "high"] as Priority[]).map((p) => (
                       <button
                         key={p}
-                        className={`btn-terminal text-[9px] px-2 py-0.5 ${model.priority === p ? "active" : ""}`}
+                        className={`btn-terminal text-xs px-2 py-0.5 ${model.priority === p ? "active" : ""}`}
                         style={model.priority === p ? { borderColor: PRIORITY_COLORS[p], color: PRIORITY_COLORS[p] } : {}}
                         onClick={() => updateModel({ priority: p })}
                       >
@@ -440,7 +440,7 @@ export default function PlannerPage() {
                 {STATUS_FLOW.map((s) => (
                   <button
                     key={s}
-                    className={`btn-terminal text-[9px] px-2 py-0.5 transition-all ${model.status === s ? "active" : ""}`}
+                    className={`btn-terminal text-xs px-2 py-0.5 transition-all ${model.status === s ? "active" : ""}`}
                     style={model.status === s ? { borderColor: STATUS_COLORS[s], color: STATUS_COLORS[s] } : {}}
                     onClick={() => updateModel({ status: s })}
                   >
@@ -451,7 +451,7 @@ export default function PlannerPage() {
 
               {/* Progress bar */}
               <div className="flex items-center gap-2">
-                <span className="text-[9px] text-green-dim">PROGRESS</span>
+                <span className="text-sm text-green-dim">PROGRESS</span>
                 <div className="flex-1 h-2 bg-surface-2 border border-border">
                   <div
                     className="h-full transition-all duration-300"
@@ -462,16 +462,16 @@ export default function PlannerPage() {
                     }}
                   />
                 </div>
-                <span className="text-[9px] text-green font-mono w-8">{progress}%</span>
+                <span className="text-sm text-green font-mono w-8">{progress}%</span>
               </div>
 
               {/* Silhouette type selector */}
               <div className="flex gap-1 mt-3">
-                <span className="text-[9px] text-green-dim self-center mr-1">TYPE:</span>
+                <span className="text-sm text-green-dim self-center mr-1">TYPE:</span>
                 {SILHOUETTE_TYPES.map((t) => (
                   <button
                     key={t}
-                    className={`btn-terminal text-[9px] px-2 py-0.5 ${model.silhouetteType === t ? "active" : ""}`}
+                    className={`btn-terminal text-xs px-2 py-0.5 ${model.silhouetteType === t ? "active" : ""}`}
                     onClick={() => updateModel({ silhouetteType: t })}
                   >
                     {t.toUpperCase()}
@@ -485,7 +485,7 @@ export default function PlannerPage() {
               {(["scheme", "silhouette", "brainstorm"] as const).map((t) => (
                 <button
                   key={t}
-                  className={`btn-terminal text-[10px] px-4 py-1 ${tab === t ? "active" : ""}`}
+                  className={`btn-terminal text-[13px] px-4 py-1 ${tab === t ? "active" : ""}`}
                   onClick={() => setTab(t)}
                 >
                   {t.toUpperCase()}
@@ -516,7 +516,7 @@ export default function PlannerPage() {
                       placeholder="new scheme name"
                       className="flex-1 text-xs"
                     />
-                    <button className="btn-terminal text-[10px] px-2" onClick={addScheme}>CREATE</button>
+                    <button className="btn-terminal text-[13px] px-2" onClick={addScheme}>CREATE</button>
                   </div>
 
                   {/* Layers */}
@@ -524,7 +524,7 @@ export default function PlannerPage() {
                     <div>
                       <div className="overflow-x-auto">
                       <div className="min-w-[480px]">
-                      <div className="grid grid-cols-[24px_1fr_80px_100px_32px_28px] gap-x-2 text-[9px] text-green-dim mb-1 px-1">
+                      <div className="grid grid-cols-[24px_1fr_80px_100px_32px_28px] gap-x-2 text-sm text-green-dim mb-1 px-1">
                         <span>#</span><span>ROLE</span><span>PAINT</span><span>HEX</span><span>ZONE</span><span></span>
                       </div>
                       {scheme.layers.map((layer, i) => (
@@ -534,22 +534,22 @@ export default function PlannerPage() {
                             ${layer.done ? "opacity-50" : ""}`}
                         >
                           <button
-                            className={`w-5 h-5 border text-center text-[9px] ${layer.done ? "border-green bg-green/20 text-green" : "border-border text-green-dim"}`}
+                            className={`w-5 h-5 border text-center text-xs ${layer.done ? "border-green bg-green/20 text-green" : "border-border text-green-dim"}`}
                             onClick={() => updateLayer(layer.id, { done: !layer.done })}
                           >
                             {layer.done ? "✓" : String(i + 1).padStart(2, "0")}
                           </button>
-                          <span className="text-[9px] text-green uppercase">{layer.role}</span>
+                          <span className="text-sm text-green uppercase">{layer.role}</span>
                           <div className="flex items-center gap-0.5">
                             <input
                               type="text"
                               value={layer.paintName}
                               onChange={(e) => updateLayer(layer.id, { paintName: e.target.value })}
                               placeholder="paint name"
-                              className="flex-1 text-[9px] py-0.5 px-1 border-border min-w-0"
+                              className="flex-1 text-xs py-0.5 px-1 border-border min-w-0"
                             />
                             <button
-                              className="text-[9px] text-cyan hover:glow-cyan shrink-0 px-0.5"
+                              className="text-xs text-cyan hover:glow-cyan shrink-0 px-0.5"
                               title="Search paint library"
                               onClick={() => setPickerForLayer(layer.id)}
                             >⌕</button>
@@ -562,13 +562,13 @@ export default function PlannerPage() {
                               onChange={(e) => updateLayer(layer.id, { paintHex: e.target.value.toUpperCase() })}
                               placeholder="#000000"
                               maxLength={7}
-                              className="flex-1 text-[9px] py-0.5 px-1 font-mono border-border"
+                              className="flex-1 text-xs py-0.5 px-1 font-mono border-border"
                             />
                           </div>
                           <select
                             value={layer.zone || ""}
                             onChange={(e) => updateLayer(layer.id, { zone: (e.target.value as BodyZone) || null })}
-                            className="text-[8px] py-0 px-0.5 border-border"
+                            className="text-sm py-0 px-0.5 border-border"
                           >
                             <option value="">-</option>
                             <option value="head">HEAD</option>
@@ -588,7 +588,7 @@ export default function PlannerPage() {
                             <option value="ground">GROUND</option>
                           </select>
                           <button
-                            className="btn-terminal text-[9px] px-1 py-0"
+                            className="btn-terminal text-xs px-1 py-0"
                             onClick={() => deleteLayer(layer.id)}
                           >×</button>
                         </div>
@@ -602,7 +602,7 @@ export default function PlannerPage() {
                         {LAYER_ROLES.map((role) => (
                           <button
                             key={role}
-                            className="btn-terminal text-[9px] px-2 py-0.5"
+                            className="btn-terminal text-xs px-2 py-0.5"
                             onClick={() => addLayer(role)}
                           >
                             + {role}
@@ -626,7 +626,7 @@ export default function PlannerPage() {
                     onZoneClick={(zone) => setActiveZone(activeZone === zone ? null : zone)}
                   />
                   {activeZone && (
-                    <div className="mt-3 text-[9px] text-green-dim">
+                    <div className="mt-3 text-sm text-green-dim">
                       SELECTED: <span className="text-cyan">{activeZone.toUpperCase()}</span>
                       {" "}— assign a paint hex in the SCHEME tab and link it to this zone.
                     </div>
@@ -639,12 +639,12 @@ export default function PlannerPage() {
                     {Object.entries(zoneColors).map(([zone, hex]) => (
                       <div key={zone} className="flex items-center gap-2">
                         <div className="w-4 h-4 border border-border/60" style={{ backgroundColor: hex }} />
-                        <span className="text-[9px] text-green uppercase">{zone}</span>
-                        <span className="text-[9px] text-green-dim font-mono ml-auto">{hex}</span>
+                        <span className="text-sm text-green uppercase">{zone}</span>
+                        <span className="text-sm text-green-dim font-mono ml-auto">{hex}</span>
                       </div>
                     ))}
                     {Object.keys(zoneColors).length === 0 && (
-                      <span className="text-[9px] text-green-dim">
+                      <span className="text-sm text-green-dim">
                         No zones assigned yet. Add paint layers with zones in the SCHEME tab.
                       </span>
                     )}
@@ -659,16 +659,16 @@ export default function PlannerPage() {
                 <div className="space-y-1 mb-3">
                   {(model.brainstorm || []).map((item, i) => (
                     <div key={i} className="flex items-center gap-2 py-0.5">
-                      <span className="text-green-dim text-[10px]">›</span>
-                      <span className="flex-1 text-[10px] text-green">{item}</span>
+                      <span className="text-green-dim text-[13px]">›</span>
+                      <span className="flex-1 text-[13px] text-green">{item}</span>
                       <button
-                        className="text-[9px] text-red opacity-60 hover:opacity-100"
+                        className="text-xs text-red opacity-60 hover:opacity-100"
                         onClick={() => removeBrainstorm(i)}
                       >×</button>
                     </div>
                   ))}
                   {(model.brainstorm || []).length === 0 && (
-                    <span className="text-[9px] text-green-dim">No ideas yet. Add some below.</span>
+                    <span className="text-sm text-green-dim">No ideas yet. Add some below.</span>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -678,9 +678,9 @@ export default function PlannerPage() {
                     onChange={(e) => setBrainstormInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && addBrainstorm()}
                     placeholder="idea, technique, color note..."
-                    className="flex-1 text-xs py-1"
+                    className="flex-1 text-sm py-1"
                   />
-                  <button className="btn-terminal text-[10px] px-3" onClick={addBrainstorm}>ADD</button>
+                  <button className="btn-terminal text-[13px] px-3" onClick={addBrainstorm}>ADD</button>
                 </div>
               </TerminalBox>
             )}

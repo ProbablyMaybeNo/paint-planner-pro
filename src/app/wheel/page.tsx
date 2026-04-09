@@ -151,28 +151,28 @@ function WheelPageInner() {
   return (
     <div className="flex flex-col h-full">
       <div className="border-b border-border px-3 py-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <span className="text-green glow-green text-xs tracking-widest font-semibold hidden sm:block shrink-0">
+        <span className="text-green glow-green text-base tracking-widest font-semibold hidden sm:block shrink-0">
           ┌─[ COLOUR WHEEL TERMINAL ]
         </span>
         <div className="flex gap-1 overflow-x-auto sm:ml-4 flex-nowrap pb-0.5 sm:pb-0">
           {Object.entries(HARMONY_CONFIGS).map(([key, cfg]) => (
             <button
               key={key}
-              className={`btn-terminal text-[9px] px-2 py-0.5 shrink-0 ${harmonyMode === key && !freeMode ? "active" : ""}`}
+              className={`btn-terminal text-xs px-2 py-0.5 shrink-0 ${harmonyMode === key && !freeMode ? "active" : ""}`}
               onClick={() => { setHarmonyMode(key); setFreeMode(false); }}
             >
               {cfg.label}
             </button>
           ))}
           <button
-            className={`btn-cyan btn-terminal text-[9px] px-2 py-0.5 shrink-0 ${freeMode ? "active" : ""}`}
+            className={`btn-cyan btn-terminal text-xs px-2 py-0.5 shrink-0 ${freeMode ? "active" : ""}`}
             onClick={() => setFreeMode(true)}
           >
             FREE
           </button>
         </div>
         <div className="flex items-center gap-2 sm:ml-auto shrink-0">
-          <span className="text-green-dim text-[10px]">L:</span>
+          <span className="text-green-dim text-[13px]">L:</span>
           <input
             type="range"
             min={10} max={90}
@@ -180,7 +180,7 @@ function WheelPageInner() {
             onChange={(e) => handleLightnessChange(Number(e.target.value))}
             className="w-24 sm:w-28"
           />
-          <span className="text-green text-[10px] font-mono w-6">{lightness}%</span>
+          <span className="text-green text-[13px] font-mono w-6">{lightness}%</span>
         </div>
       </div>
 
@@ -197,7 +197,7 @@ function WheelPageInner() {
             />
             {freeMode && stops.length < 10 && (
               <button
-                className="absolute bottom-2 right-2 btn-terminal text-[10px] px-2"
+                className="absolute bottom-2 right-2 btn-terminal text-[13px] px-2"
                 onClick={addFreeStop}
               >
                 + ADD STOP
@@ -210,7 +210,7 @@ function WheelPageInner() {
         <div className="w-full lg:w-72 border-t lg:border-t-0 lg:border-l border-border flex flex-col lg:overflow-hidden lg:flex-shrink-0">
           {/* Stop list */}
           <div className="border-b border-border p-3">
-            <div className="text-[10px] text-green-dim tracking-widest mb-2">COLOUR STOPS</div>
+            <div className="text-[13px] text-green-dim tracking-widest mb-2">COLOUR STOPS</div>
             <div className="space-y-1">
               {stops.map((stop, i) => {
                 const hex = hslToHex(stop.hue, stop.saturation, stop.lightness);
@@ -225,17 +225,17 @@ function WheelPageInner() {
                     onClick={() => setActiveId(stop.id)}
                   >
                     <div className="w-5 h-5 border border-border/60" style={{ backgroundColor: hex }} />
-                    <span className="text-[9px] text-green font-mono flex-1">{hex}</span>
-                    <span className="text-[9px] text-green-dim">H:{stop.hue.toFixed(0)}°</span>
-                    {stop.isPrimary && <span className="text-[8px] text-green">PRIMARY</span>}
+                    <span className="text-sm text-green font-mono flex-1">{hex}</span>
+                    <span className="text-sm text-green-dim">H:{stop.hue.toFixed(0)}°</span>
+                    {stop.isPrimary && <span className="text-sm text-green">PRIMARY</span>}
                     <button
-                      className="text-[9px] text-red opacity-0 group-hover:opacity-100 hover:opacity-100"
+                      className="text-xs text-red opacity-0 group-hover:opacity-100 hover:opacity-100"
                       onClick={(e) => { e.stopPropagation(); removeStop(stop.id); }}
                     >
                       ×
                     </button>
                     <button
-                      className="text-[9px] text-cyan hover:glow-cyan"
+                      className="text-xs text-cyan hover:glow-cyan"
                       onClick={(e) => { e.stopPropagation(); addToPalette(stop); }}
                       title="Add to palette"
                     >
@@ -250,11 +250,11 @@ function WheelPageInner() {
           {/* Active stop matches */}
           <div className="lg:flex-1 lg:overflow-y-auto">
             <div className="p-3 border-b border-border">
-              <div className="text-[10px] text-green-dim tracking-widest mb-1">CLOSEST PAINTS</div>
+              <div className="text-[13px] text-green-dim tracking-widest mb-1">CLOSEST PAINTS</div>
               {activeHex && (
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 border border-border" style={{ backgroundColor: activeHex }} />
-                  <span className="text-[10px] text-green font-mono">{activeHex}</span>
+                  <span className="text-[13px] text-green font-mono">{activeHex}</span>
                 </div>
               )}
             </div>
@@ -268,10 +268,10 @@ function WheelPageInner() {
                   <div key={paint.id} className="flex items-center gap-2 px-3 py-1.5 border-b border-border/40 hover:bg-green-faint">
                     <div className="w-5 h-5 border border-border/60" style={{ backgroundColor: paint.hex }} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[9px] text-green truncate">{paint.name}</div>
-                      <div className="text-[8px] text-green-dim">{paint.company}</div>
+                      <div className="text-sm text-green truncate">{paint.name}</div>
+                      <div className="text-sm text-green-dim">{paint.company}</div>
                     </div>
-                    <span className="text-[9px] text-green-dim">ΔE {deltaE.toFixed(1)}</span>
+                    <span className="text-sm text-green-dim">ΔE {deltaE.toFixed(1)}</span>
                   </div>
                 ))
               )}
@@ -281,7 +281,7 @@ function WheelPageInner() {
           {/* Palette export */}
           {palette.length > 0 && (
             <div className="border-t border-border p-3">
-              <div className="text-[10px] text-green-dim tracking-widest mb-2">
+              <div className="text-[13px] text-green-dim tracking-widest mb-2">
                 MY PALETTE ({palette.length}/10)
               </div>
               <div className="flex flex-wrap gap-1 mb-2">
@@ -294,7 +294,7 @@ function WheelPageInner() {
               </div>
               <a
                 href="/planner"
-                className="btn-terminal btn-cyan text-[10px] w-full block text-center"
+                className="btn-terminal btn-cyan text-[13px] w-full block text-center"
                 onClick={sendToPlanner}
               >
                 SEND TO PLANNER →

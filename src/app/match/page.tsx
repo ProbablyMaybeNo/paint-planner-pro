@@ -20,7 +20,7 @@ function ColorSwatch({ hex, label, size = "sm" }: { hex: string; label?: string;
     <div className={`border border-border ${size === "lg" ? "h-20" : "h-12"}`}
          style={{ backgroundColor: hex || "#111" }}>
       {label && (
-        <div className="px-1 py-0.5 text-[9px]" style={{ color: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.6)" }}>
+        <div className="px-1 py-0.5 text-xs" style={{ color: isLight ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.6)" }}>
           {label}
         </div>
       )}
@@ -38,14 +38,14 @@ function MatchRow({ paint, score, onClick }: { paint: Paint; score: number; onCl
       <div className="w-6 h-6 border border-border/60 flex-shrink-0"
            style={{ backgroundColor: paint.hex || "#111" }} />
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] text-green truncate group-hover:glow-green">{paint.name}</div>
-        <div className="text-[9px] text-green-dim">{paint.company} · {paint.line}</div>
+        <div className="text-[13px] text-green truncate group-hover:glow-green">{paint.name}</div>
+        <div className="text-sm text-green-dim">{paint.company} · {paint.line}</div>
       </div>
       <div className="text-right flex-shrink-0">
-        <div className="text-[9px] text-green font-mono">{paint.hex}</div>
-        <div className="text-[9px] text-green-dim">ΔE {score.toFixed(1)}</div>
+        <div className="text-sm text-green font-mono">{paint.hex}</div>
+        <div className="text-sm text-green-dim">ΔE {score.toFixed(1)}</div>
       </div>
-      <span className="text-[10px]" style={{ color: icon.color }} title={icon.label}>{icon.symbol}</span>
+      <span className="text-[13px]" style={{ color: icon.color }} title={icon.label}>{icon.symbol}</span>
     </div>
   );
 }
@@ -102,7 +102,7 @@ function MatchPageInner() {
   return (
     <div className="flex flex-col h-full">
       <div className="border-b border-border px-4 py-2">
-        <span className="text-green glow-green text-xs tracking-widest font-semibold">
+        <span className="text-green glow-green text-base tracking-widest font-semibold">
           ┌─[ COLOUR MATCH SYSTEM ]
         </span>
       </div>
@@ -119,9 +119,9 @@ function MatchPageInner() {
                 onChange={(e) => setHexInput(e.target.value.toUpperCase())}
                 placeholder="#FF8C00"
                 maxLength={7}
-                className="flex-1 text-xs py-1"
+                className="flex-1 text-sm py-1"
               />
-              <button type="submit" className="btn-terminal text-[10px] px-2">▶</button>
+              <button type="submit" className="btn-terminal text-[13px] px-2">▶</button>
             </form>
 
             {/* Large swatch */}
@@ -131,11 +131,11 @@ function MatchPageInner() {
             >
               {isValidHex && (
                 <>
-                  <div className="text-[11px] font-mono" style={{ color: isLightColor(activeHex) ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)" }}>
+                  <div className="text-sm font-mono" style={{ color: isLightColor(activeHex) ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)" }}>
                     {activeHex}
                   </div>
                   {hsl && (
-                    <div className="text-[9px]" style={{ color: isLightColor(activeHex) ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.5)" }}>
+                    <div className="text-xs" style={{ color: isLightColor(activeHex) ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.5)" }}>
                       H:{hsl.h.toFixed(0)}° S:{hsl.s.toFixed(0)}% L:{hsl.l.toFixed(0)}%
                     </div>
                   )}
@@ -145,7 +145,7 @@ function MatchPageInner() {
 
             {/* Native color picker */}
             <div className="flex items-center gap-2">
-              <label className="text-[10px] text-green-dim">PICKER:</label>
+              <label className="text-[13px] text-green-dim">PICKER:</label>
               <input
                 type="color"
                 value={isValidHex ? activeHex : "#00ff41"}
@@ -166,8 +166,8 @@ function MatchPageInner() {
                 {Object.entries(techniques).map(([key, hex]) => (
                   <div key={key} className="flex items-center gap-2">
                     <div className="w-8 h-5 border border-border/60 flex-shrink-0" style={{ backgroundColor: hex }} />
-                    <span className="text-[9px] text-green-dim uppercase">{key.replace(/([A-Z])/g, ' $1')}</span>
-                    <span className="text-[9px] text-green ml-auto font-mono">{hex}</span>
+                    <span className="text-sm text-green-dim uppercase">{key.replace(/([A-Z])/g, ' $1')}</span>
+                    <span className="text-sm text-green ml-auto font-mono">{hex}</span>
                   </div>
                 ))}
               </div>
@@ -178,8 +178,8 @@ function MatchPageInner() {
         {/* Center: closest matches */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="border-b border-border p-3 flex items-center gap-2">
-            <span className="text-green-dim text-[10px] tracking-widest">CLOSEST MATCHES</span>
-            <span className="text-green-dim text-[10px]">— CIEDE2000 ΔE</span>
+            <span className="text-green-dim text-[13px] tracking-widest">CLOSEST MATCHES</span>
+            <span className="text-green-dim text-[13px]">— CIEDE2000 ΔE</span>
           </div>
           <div className="flex-1 overflow-y-auto">
             {loading ? (
@@ -207,7 +207,7 @@ function MatchPageInner() {
         {/* Right: harmony */}
         <div className="w-full lg:w-72 border-t lg:border-t-0 lg:border-l border-border flex flex-col overflow-hidden flex-shrink-0">
           <div className="border-b border-border p-3">
-            <span className="text-green-dim text-[10px] tracking-widest">COLOUR HARMONIES</span>
+            <span className="text-green-dim text-[13px] tracking-widest">COLOUR HARMONIES</span>
           </div>
 
           {/* Harmony mode selector */}
@@ -216,7 +216,7 @@ function MatchPageInner() {
               {Object.entries(HARMONY_CONFIGS).map(([key, cfg]) => (
                 <button
                   key={key}
-                  className={`btn-terminal text-[9px] px-1 py-1 ${harmonyMode === key ? "active" : ""}`}
+                  className={`btn-terminal text-xs px-1 py-1 ${harmonyMode === key ? "active" : ""}`}
                   onClick={() => setHarmonyMode(key)}
                 >
                   {cfg.label}
@@ -224,7 +224,7 @@ function MatchPageInner() {
               ))}
             </div>
             {HARMONY_CONFIGS[harmonyMode] && (
-              <p className="text-[9px] text-green-dim mt-2">
+              <p className="text-sm text-green-dim mt-2">
                 {HARMONY_CONFIGS[harmonyMode].description}
               </p>
             )}
@@ -238,8 +238,8 @@ function MatchPageInner() {
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-8 h-8 border border-border" style={{ backgroundColor: color.hex }} />
                   <div>
-                    <div className="text-[10px] text-green font-mono">{color.hex}</div>
-                    <div className="text-[9px] text-green-dim">
+                    <div className="text-[13px] text-green font-mono">{color.hex}</div>
+                    <div className="text-sm text-green-dim">
                       H:{color.hue.toFixed(0)}° S:{color.saturation.toFixed(0)}% L:{color.lightness.toFixed(0)}%
                     </div>
                   </div>
@@ -249,10 +249,10 @@ function MatchPageInner() {
                   <div key={paint.id} className="flex items-center gap-1.5 py-0.5 pl-10">
                     <div className="w-4 h-4 border border-border/60 flex-shrink-0" style={{ backgroundColor: paint.hex || "#111" }} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-[9px] text-green truncate">{paint.name}</div>
-                      <div className="text-[9px] text-green-dim">{paint.company}</div>
+                      <div className="text-sm text-green truncate">{paint.name}</div>
+                      <div className="text-sm text-green-dim">{paint.company}</div>
                     </div>
-                    <span className="text-[9px] text-green-dim flex-shrink-0">ΔE {de.toFixed(1)}</span>
+                    <span className="text-sm text-green-dim flex-shrink-0">ΔE {de.toFixed(1)}</span>
                   </div>
                 ))}
               </div>

@@ -136,11 +136,11 @@ function LibraryPageInner() {
     <div className="flex flex-col h-full" style={{ height: "calc(100vh - 80px)" }}>
       {/* Header bar */}
       <div className="border-b border-border px-4 py-2 flex items-center gap-3 flex-shrink-0">
-        <span className="text-green glow-green text-xs tracking-widest font-semibold whitespace-nowrap">
+        <span className="text-green glow-green text-base tracking-widest font-semibold whitespace-nowrap">
           ┌─[ PAINT DATABASE ]
         </span>
         <div className="flex-1 relative">
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-green-dim text-[10px]">SEARCH:</span>
+          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-green-dim text-[13px]">SEARCH:</span>
           <input
             ref={searchRef}
             type="search"
@@ -152,11 +152,11 @@ function LibraryPageInner() {
         </div>
         {/* Sort — desktop only */}
         <div className="hidden sm:flex gap-1 items-center flex-shrink-0">
-          <span className="text-green-dim text-[10px]">SORT:</span>
+          <span className="text-green-dim text-[13px]">SORT:</span>
           {(["hue", "name", "company"] as const).map((s) => (
             <button
               key={s}
-              className={`btn-terminal text-[9px] px-2 py-0.5 ${sortBy === s ? "active" : ""}`}
+              className={`btn-terminal text-xs px-2 py-0.5 ${sortBy === s ? "active" : ""}`}
               onClick={() => setSortBy(s)}
             >
               {s.toUpperCase()}
@@ -165,12 +165,12 @@ function LibraryPageInner() {
         </div>
         {/* Filter toggle — mobile */}
         <button
-          className="md:hidden btn-terminal text-[9px] px-2 py-0.5 flex-shrink-0"
+          className="md:hidden btn-terminal text-xs px-2 py-0.5 flex-shrink-0"
           onClick={() => setSidebarOpen((v) => !v)}
         >
           {sidebarOpen ? "✕ FILTERS" : "☰ FILTERS"}
         </button>
-        <span className="text-green-dim text-[10px] whitespace-nowrap">
+        <span className="text-green-dim text-[13px] whitespace-nowrap">
           {loading ? "LOADING..." : `${filtered.length.toLocaleString()} / ${paints.length.toLocaleString()} PAINTS`}
         </span>
       </div>
@@ -208,14 +208,14 @@ function LibraryPageInner() {
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center h-32">
-              <span className="text-green-dim text-xs tracking-widest">
+              <span className="text-green-dim text-sm tracking-widest">
                 LOADING PAINT DATABASE<span className="blink">_</span>
               </span>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-32 gap-2">
               <span className="text-green-dim text-xs">NO RECORDS MATCH QUERY</span>
-              <button className="btn-terminal text-[10px]" onClick={() => { setSearch(""); setCompany(""); setLine(""); setPaintType(""); clearHue(); }}>
+              <button className="btn-terminal text-[13px]" onClick={() => { setSearch(""); setCompany(""); setLine(""); setPaintType(""); clearHue(); }}>
                 CLEAR ALL FILTERS
               </button>
             </div>
@@ -234,7 +234,7 @@ function LibraryPageInner() {
                     {paint.hex && (
                       <button
                         onClick={(e) => handleCopy(paint, e)}
-                        className="absolute top-0.5 left-0.5 text-[8px] opacity-0 group-hover:opacity-90 hover:!opacity-100 transition-opacity bg-black/70 px-0.5"
+                        className="absolute top-0.5 left-0.5 text-sm opacity-0 group-hover:opacity-90 hover:!opacity-100 transition-opacity bg-black/70 px-0.5"
                         style={{ color: copied === paint.id ? "#00e5ff" : "rgba(255,255,255,0.8)" }}
                         title="Copy hex"
                       >
@@ -257,13 +257,13 @@ function LibraryPageInner() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6 mb-2">
-                  <button className="btn-terminal text-[10px] px-3" disabled={page === 1} onClick={() => setPage(1)}>◄◄</button>
-                  <button className="btn-terminal text-[10px] px-3" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>◄ PREV</button>
-                  <span className="text-green-dim text-[10px] px-2">
+                  <button className="btn-terminal text-[13px] px-3" disabled={page === 1} onClick={() => setPage(1)}>◄◄</button>
+                  <button className="btn-terminal text-[13px] px-3" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>◄ PREV</button>
+                  <span className="text-green-dim text-[13px] px-2">
                     {page} / {totalPages} &nbsp;·&nbsp; {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE, filtered.length).toLocaleString()} of {filtered.length.toLocaleString()}
                   </span>
-                  <button className="btn-terminal text-[10px] px-3" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>NEXT ►</button>
-                  <button className="btn-terminal text-[10px] px-3" disabled={page === totalPages} onClick={() => setPage(totalPages)}>►►</button>
+                  <button className="btn-terminal text-[13px] px-3" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>NEXT ►</button>
+                  <button className="btn-terminal text-[13px] px-3" disabled={page === totalPages} onClick={() => setPage(totalPages)}>►►</button>
                 </div>
               )}
             </div>
@@ -278,14 +278,14 @@ function LibraryPageInner() {
                 className="w-full h-20 mb-3 border border-border flex flex-col justify-end p-1.5"
                 style={{ backgroundColor: selected.hex || "#1a1a1a" }}
               >
-                <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.75)" }}>
+                <span className="text-[13px] font-mono" style={{ color: "rgba(255,255,255,0.75)" }}>
                   {selected.hex || "NO HEX"}
                 </span>
               </div>
 
-              <div className="text-[10px] text-green font-semibold mb-2 leading-tight">{selected.name}</div>
+              <div className="text-[13px] text-green font-semibold mb-2 leading-tight">{selected.name}</div>
 
-              <div className="text-[9px] text-green-dim space-y-0.5 mb-3">
+              <div className="text-sm text-green-dim space-y-0.5 mb-3">
                 <div>CO: <span className="text-green">{selected.company}</span></div>
                 {selected.line && <div>LINE: <span className="text-green">{selected.line}</span></div>}
                 <div>HEX: <span className="text-green font-mono">{selected.hex || "—"}</span></div>
@@ -295,15 +295,15 @@ function LibraryPageInner() {
                 {selected.hex && (
                   <button
                     onClick={() => { navigator.clipboard.writeText(selected.hex).catch(() => {}); setCopied(selected.id); setTimeout(() => setCopied(null), 1500); }}
-                    className="btn-terminal text-[10px] w-full"
+                    className="btn-terminal text-[13px] w-full"
                   >
                     {copied === selected.id ? "✓ COPIED" : "⎘ COPY HEX"}
                   </button>
                 )}
-                <a href={`/match?hex=${encodeURIComponent(selected.hex || "")}`} className="btn-terminal text-[10px] text-center block">
+                <a href={`/match?hex=${encodeURIComponent(selected.hex || "")}`} className="btn-terminal text-[13px] text-center block">
                   FIND MATCHES →
                 </a>
-                <a href={`/wheel?hex=${encodeURIComponent(selected.hex || "")}`} className="btn-terminal btn-cyan text-[10px] text-center block">
+                <a href={`/wheel?hex=${encodeURIComponent(selected.hex || "")}`} className="btn-terminal btn-cyan text-[13px] text-center block">
                   COLOUR WHEEL →
                 </a>
               </div>

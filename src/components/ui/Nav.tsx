@@ -23,10 +23,10 @@ export default function Nav() {
       <div className="flex items-center px-3 py-2 gap-0">
         {/* Logo */}
         <Link href="/" className="mr-4 flex flex-col">
-          <span className="text-green glow-green text-xs font-semibold tracking-widest leading-tight">
+          <span className="text-green glow-green text-base font-semibold tracking-widest leading-tight">
             PAINT PLANNER PRO
           </span>
-          <span className="text-green-dim text-[9px] tracking-wider hidden sm:block">
+          <span className="text-green-dim text-xs tracking-wider hidden sm:block">
             TACTICAL COLOUR SYSTEM v0.1
           </span>
         </Link>
@@ -43,7 +43,7 @@ export default function Nav() {
                 key={item.href}
                 href={item.href}
                 className={`
-                  px-3 py-1 text-xs tracking-widest border transition-all duration-150
+                  px-3 py-1 text-sm tracking-widest border transition-all duration-150
                   ${active
                     ? "border-green bg-green-faint text-green glow-green"
                     : "border-transparent text-green-dim hover:border-border hover:text-green"
@@ -58,7 +58,7 @@ export default function Nav() {
         </div>
 
         {/* Right side status */}
-        <div className="ml-auto flex items-center gap-3 text-[10px] text-green-dim">
+        <div className="ml-auto flex items-center gap-3 text-[13px] text-green-dim">
           <span className="hidden sm:block">SYS:ONLINE</span>
 
           {/* Auth status */}
@@ -68,18 +68,18 @@ export default function Nav() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={session.user.image} alt="" className="w-5 h-5 rounded-full border border-green/40" />
               )}
-              <span className="text-[9px] text-green-dim truncate max-w-24">
+              <span className="text-sm text-green-dim truncate max-w-24">
                 {session.user.email?.split("@")[0]}
               </span>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="btn-terminal text-[9px] px-2 py-0.5"
+                className="btn-terminal text-xs px-2 py-0.5"
               >
                 OUT
               </button>
             </div>
           ) : status === "unauthenticated" ? (
-            <Link href="/auth/signin" className="hidden sm:block btn-terminal btn-cyan text-[9px] px-2 py-0.5">
+            <Link href="/auth/signin" className="hidden sm:block btn-terminal btn-cyan text-xs px-2 py-0.5">
               SIGN IN
             </Link>
           ) : null}
@@ -88,7 +88,7 @@ export default function Nav() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden btn-terminal text-[10px] px-2 py-0.5"
+            className="md:hidden btn-terminal text-[13px] px-2 py-0.5"
             onClick={() => setMenuOpen((v) => !v)}
           >
             {menuOpen ? "✕" : "☰"} MENU
@@ -106,7 +106,7 @@ export default function Nav() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-4 py-2.5 text-xs tracking-widest border-b border-border/40 ${
+                className={`block px-4 py-2.5 text-sm tracking-widest border-b border-border/40 ${
                   active ? "text-green glow-green bg-green-faint" : "text-green-dim"
                 }`}
               >

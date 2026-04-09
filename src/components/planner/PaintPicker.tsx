@@ -43,7 +43,7 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
       >
         {/* Search input */}
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <span className="text-green text-[10px] tracking-widest shrink-0">SEARCH PAINT</span>
+          <span className="text-green text-[13px] tracking-widest shrink-0">SEARCH PAINT</span>
           <input
             ref={inputRef}
             type="text"
@@ -58,11 +58,11 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
         {/* Results */}
         <div className="max-h-72 overflow-y-auto">
           {query.length < 2 ? (
-            <div className="px-3 py-5 text-[10px] text-green-dim text-center">
+            <div className="px-3 py-5 text-[13px] text-green-dim text-center">
               TYPE TO SEARCH<span className="blink">_</span>
             </div>
           ) : results.length === 0 ? (
-            <div className="px-3 py-5 text-[10px] text-green-dim text-center">NO MATCH</div>
+            <div className="px-3 py-5 text-[13px] text-green-dim text-center">NO MATCH</div>
           ) : (
             results.map((p) => (
               <button
@@ -75,10 +75,10 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
                   style={{ backgroundColor: p.hex }}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] text-green truncate">{p.name}</div>
-                  <div className="text-[8px] text-green-dim">{p.company}</div>
+                  <div className="text-[13px] text-green truncate">{p.name}</div>
+                  <div className="text-sm text-green-dim">{p.company}</div>
                 </div>
-                <span className="text-[9px] text-green-dim font-mono shrink-0">{p.hex}</span>
+                <span className="text-sm text-green-dim font-mono shrink-0">{p.hex}</span>
               </button>
             ))
           )}
