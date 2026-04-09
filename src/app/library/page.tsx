@@ -11,7 +11,7 @@ import CompareTray from "@/components/library/CompareTray";
 import TypeLegend from "@/components/ui/TypeLegend";
 import TerminalBox from "@/components/ui/TerminalBox";
 
-const PAGE_SIZE = 120;
+const PAGE_SIZE = 240;
 
 function LibraryPageInner() {
   const searchParams = useSearchParams();
@@ -222,7 +222,7 @@ function LibraryPageInner() {
           ) : (
             <div className="p-3">
               {/* Company group headers when sorting by company */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-1.5">
                 {paginated.map((paint) => (
                   <div key={paint.id} className="relative group">
                     <PaintCard
@@ -234,8 +234,8 @@ function LibraryPageInner() {
                     {paint.hex && (
                       <button
                         onClick={(e) => handleCopy(paint, e)}
-                        className="absolute top-1 left-1.5 text-[9px] opacity-0 group-hover:opacity-80 hover:!opacity-100 transition-opacity bg-black/60 px-1"
-                        style={{ color: copied === paint.id ? "#00e5ff" : "rgba(255,255,255,0.7)" }}
+                        className="absolute top-0.5 left-0.5 text-[8px] opacity-0 group-hover:opacity-90 hover:!opacity-100 transition-opacity bg-black/70 px-0.5"
+                        style={{ color: copied === paint.id ? "#00e5ff" : "rgba(255,255,255,0.8)" }}
                         title="Copy hex"
                       >
                         {copied === paint.id ? "✓" : "⎘"}
@@ -244,11 +244,11 @@ function LibraryPageInner() {
                     {/* Compare button */}
                     <button
                       onClick={(e) => addToCompare(paint, e)}
-                      className="absolute bottom-8 right-1.5 text-[8px] opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity bg-black/60 px-1"
+                      className="absolute bottom-6 right-0.5 text-[7px] opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity bg-black/70 px-0.5"
                       style={{ color: compareTray.some(p => p.id === paint.id) ? "#00e5ff" : "rgba(255,255,255,0.6)" }}
                       title="Add to compare"
                     >
-                      {compareTray.some(p => p.id === paint.id) ? "✓" : "+CMP"}
+                      {compareTray.some(p => p.id === paint.id) ? "✓" : "+"}
                     </button>
                   </div>
                 ))}
