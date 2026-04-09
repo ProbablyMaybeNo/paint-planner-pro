@@ -35,7 +35,18 @@ export default function PaintPicker({ onSelect, onClose }: PaintPickerProps) {
   }, [onClose]);
 
   const results = query.length >= 2
-    ? filterPaints(paints, { search: query, hexOnly: true }).slice(0, 12)
+    ? filterPaints(paints, { search: query, hexOnly: true })
+        .sort((a, b) => {
+          const q = query.toLowerCase();
+          const an = a.name.toLowerCase();
+          const bn = b.name.toLowerCase();
+          if (an === q && bn !== q) return -1;
+          if (bn === q && an !== q) return 1;
+          if (an.startsWith(q) && !bn.startsWith(q)) return -1;
+          if (bn.startsWith(q) && !an.startsWith(q)) return 1;
+          return an.localeCompare(bn);
+        })
+        .slice(0, 20)
     : [];
 
   if (!mounted) return null;
